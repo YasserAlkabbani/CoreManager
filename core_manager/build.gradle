@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
+    id 'maven-publish'
 }
 
 android {
@@ -51,7 +52,7 @@ dependencies {
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.material:material:$compose_version"
     implementation 'androidx.activity:activity-compose:1.4.0'
-    implementation "androidx.navigation:navigation-compose:2.4.1"
+    implementation "androidx.navigation:navigation-compose:2.4.2"
 
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.1'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1"
@@ -63,4 +64,41 @@ dependencies {
 
     implementation "com.google.dagger:hilt-android:2.39"
     kapt "com.google.dagger:hilt-compiler:2.38.1"
+}
+
+def githubProperties = new Properties()
+githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
+
+def getVersionName = { ->
+    return "0.1.1-alpha"  // Replace with version Name
+}
+def getArtificatId = { ->
+    return "CoreManager" // Replace with library name ID
+}
+
+publishing {
+    publications {
+        bar(MavenPublication) {
+            groupId 'com.yasser.core_manager' // Replace with group ID
+            artifactId getArtificatId()
+            version getVersionName()
+            artifact("$buildDir/outputs/aar/${getArtificatId()}-release.aar")
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            /** Configure path of your package repository on Github
+             *  Replace GITHUB_USERID with your/organisation Github userID and REPOSITORY with the repository name on GitHub
+             */
+            url = uri("https://maven.pkg.github.com/YasserAlkabbani/CoreManager")
+
+//            credentials {
+//                /**Create github.properties in root project folder file with gpr.usr=GITHUB_USER_ID  & gpr.key=PERSONAL_ACCESS_TOKEN**/
+//                username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER")
+//                password = githubProperties['gpr.key'] ?: System.getenv("GPR_API_KEY")
+//            }
+        }
+    }
 }
