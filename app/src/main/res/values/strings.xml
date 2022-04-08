@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ApplyCoreManager</string>
+    <string name="test_toast_resource">Test Toast Resource</string>
+    <string name="permission_required">Permission Required</string>
+</resources>
