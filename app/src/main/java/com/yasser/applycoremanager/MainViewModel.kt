@@ -20,45 +20,11 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
         hideKeyBoard = {coreManager.composeManagerEvent(ComposeManager.HideKeyBoard)},
         nextFocus = {coreManager.composeManagerEvent(ComposeManager.NextFocus)},
         showToast = { coreManager.composeManagerEvent(ComposeManager.ShowToast(it))},
-        navigateTo = { route ->  coreManager.composeManagerEvent(ComposeManager.Navigate(route))},
+        navigateTo = { route ->  coreManager.composeManagerEvent(ComposeManager.Navigate { navigate(route) })},
         goToSettings ={coreManager.activityManagerEvent(StartActivityManager.GoToSettings)},
-        goToSendEmail = {coreManager.activityManagerEvent(StartActivityManager.GoToSendEmail(it))},
-        pickImageFromGallery ={
-            coreManager.permissionManagerEvent(PermissionManager.ReadExternalStorage(
-                taskToDoWhenPermissionGranted = { coreManager.activityForResultManagerEvent(ActivityForResultManager.PickImageFromGallery { val imageFile=it()}) },
-                showRequestPermissionRationale = { coreManager.activityManagerEvent(StartActivityManager.GoToSettings) },
-                taskToDoWhenPermissionDeclined = {coreManager.composeManagerEvent(ComposeManager.ShowToast(TextManager.ResourceText(R.string.test_toast_resource)))}
-            ))
-        } ,
-        startActivityForResult ={intent->
-            coreManager.activityForResultManagerEvent(ActivityForResultManager.CustomActivityForResult(intent){ val activityResult=it() })
-        },
-        requestCustomPermission = {
-            coreManager.permissionManagerEvent(
-                PermissionManager.CustomPermission(
-                    permission = Manifest.permission.CALL_PHONE,
-                    taskToDoWhenPermissionGranted = {}, showRequestPermissionRationale = {}, taskToDoWhenPermissionDeclined = {}
-                )
-            )
-        },
+        goToSendEmail = {address,subject,body->coreManager.activityManagerEvent(StartActivityManager.GoToSendEmail(address,subject,body))},
+        startCustomIntent = {coreManager.activityManagerEvent(StartActivityManager.CustomIntent(it))},
 
-
-
-
-        requestRecordAudioPermission = {
-            coreManager.permissionManagerEvent(
-                PermissionManager.RecordAudio(
-                    taskToDoWhenPermissionGranted = {Log.d("TestPermission","taskToDoWhenPermissionGranted")},
-                    showRequestPermissionRationale = {Log.d("TestPermission","showRequestPermissionRationale")},
-                    taskToDoWhenPermissionDeclined = {Log.d("TestPermission","taskToDoWhenPermissionDeclined")}
-                )
-            )
-        },
-
-
-        setText1 = {newText->_mainUIState.update { it.copy(textField1 =newText ) }},
-        setText2 = {newText->_mainUIState.update { it.copy(textField2 =newText ) }},
-        setText3 = {newText->_mainUIState.update { it.copy(textField3 =newText ) }},
 
         requestPermissionCamera = {
             coreManager.permissionManagerEvent(
@@ -87,14 +53,56 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                 )
             )
         },
+        requestCustomPermission = {
+            coreManager.permissionManagerEvent(
+                PermissionManager.CustomPermission(
+                    permission = Manifest.permission.CALL_PHONE,
+                    taskToDoWhenPermissionGranted = {}, showRequestPermissionRationale = {}, taskToDoWhenPermissionDeclined = {}
+                )
+            )
+        },
+        requestRecordAudioPermission = {
+            coreManager.permissionManagerEvent(
+                PermissionManager.RecordAudio(
+                    taskToDoWhenPermissionGranted = {Log.d("TestPermission","taskToDoWhenPermissionGranted")},
+                    showRequestPermissionRationale = {Log.d("TestPermission","showRequestPermissionRationale")},
+                    taskToDoWhenPermissionDeclined = {Log.d("TestPermission","taskToDoWhenPermissionDeclined")}
+                )
+            )
+        },
+
         startPhoneCall = {phoneNumber->
             coreManager.permissionManagerEvent(PermissionManager.CallPhone(
                 taskToDoWhenPermissionGranted = {coreManager.activityManagerEvent(StartActivityManager.StartCallPhone(phoneNumber))},
                 showRequestPermissionRationale = {coreManager.activityManagerEvent(StartActivityManager.GoToSettings)},
                 taskToDoWhenPermissionDeclined = {coreManager.composeManagerEvent(ComposeManager.ShowToast(TextManager.ResourceText(R.string.test_toast_resource)))},
-               )
+            )
             )
         },
+        pickImageFromGallery ={
+            coreManager.permissionManagerEvent(PermissionManager.ReadExternalStorage(
+                taskToDoWhenPermissionGranted = { coreManager.activityForResultManagerEvent(ActivityForResultManager.PickImageFromGallery { val imageFile=it()}) },
+                showRequestPermissionRationale = { coreManager.activityManagerEvent(StartActivityManager.GoToSettings) },
+                taskToDoWhenPermissionDeclined = {coreManager.composeManagerEvent(ComposeManager.ShowToast(TextManager.ResourceText(R.string.test_toast_resource)))}
+            ))
+        } ,
+        startActivityForResult ={intent->
+            coreManager.activityForResultManagerEvent(ActivityForResultManager.CustomActivityForResult(intent){ val activityResult=it() })
+        },
+
+
+
+
+
+
+
+
+        setText1 = {newText->_mainUIState.update { it.copy(textField1 =newText ) }},
+        setText2 = {newText->_mainUIState.update { it.copy(textField2 =newText ) }},
+        setText3 = {newText->_mainUIState.update { it.copy(textField3 =newText ) }},
+
+
+
 
     )
     private val _mainUIState:MutableStateFlow<MainUIState> = MutableStateFlow(MainUIState())
@@ -111,6 +119,7 @@ data class MainUIEvent(
     val requestRecordAudioPermission:()->Unit, val requestPermissionCamera:()->Unit,
     val requestCustomPermission:(String)->Unit,
     val pickImageFromGallery:()->Unit, val startActivityForResult:(Intent)->Unit,
-    val goToSettings:()->Unit, val startPhoneCall:(phone:String)->Unit, val goToSendEmail:(email:String)->Unit,
+    val goToSettings:()->Unit, val startPhoneCall:(phone:String)->Unit,
+    val goToSendEmail:(email:String,subject:String,body:String)->Unit,val startCustomIntent:(intent: Intent)->Unit,
     val navigateTo:(route:String)->Unit
 )
