@@ -18,7 +18,7 @@ How To Use ?
 implementation 'com.github.YasserAlkabbani:CoreManager:0.1.6-alpha'
 ```
 
-2 - repository In settings.gradle
+2 - repository
 ```
 repositories {
   google()
