@@ -45,6 +45,7 @@ setContent {
   CoreManagerContent(navController) {
      PUT YOUR CODE HERE
   }
+  
 }
 ```
 
