@@ -1,7 +1,7 @@
-package com.yasser.core_manager
+package com.yasser.coremanager
 
 import androidx.lifecycle.ViewModel
-import com.yasser.core_manager.manager.ComposeManager
+import com.yasser.coremanager.manager.ComposeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

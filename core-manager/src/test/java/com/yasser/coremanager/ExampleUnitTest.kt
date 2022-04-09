@@ -1,4 +1,4 @@
-package com.yasser.core_manager
+package com.yasser.coremanager
 
 import org.junit.Test
 

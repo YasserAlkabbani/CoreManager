@@ -76,7 +76,9 @@ dependencies {
     implementation "com.google.dagger:hilt-android:2.39"
     kapt "com.google.dagger:hilt-compiler:2.38.1"
 
-    implementation("com.yasser.core_manager:CoreManager:0.1.1-alpha")
+    implementation project(path: ':core-manager')
+
+//    implementation("com.yasser.core_manager:CoreManager:0.1.1-alpha")
 
 
 

@@ -1,4 +1,4 @@
-package com.yasser.core_manager
+package com.yasser.coremanager
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.yasser.core_manager.test", appContext.packageName)
+        assertEquals("com.yasser.core-manager.test", appContext.packageName)
     }
 }

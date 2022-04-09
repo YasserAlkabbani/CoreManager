@@ -1,4 +1,4 @@
-package com.yasser.core_manager.manager
+package com.yasser.coremanager.manager
 
 import javax.inject.Inject
 import javax.inject.Singleton

@@ -1,4 +1,4 @@
-package com.yasser.core_manager
+package com.yasser.coremanager
 
 import android.Manifest
 import android.content.Intent
@@ -23,7 +23,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.yasser.core_manager.manager.*
+import com.yasser.coremanager.manager.*
+import com.yasser.coremanager.manager.ComposeManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNot

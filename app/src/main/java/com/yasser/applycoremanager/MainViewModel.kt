@@ -4,7 +4,8 @@ import android.Manifest
 import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.yasser.core_manager.manager.*
+import com.yasser.coremanager.manager.*
+import com.yasser.coremanager.manager.ComposeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
