@@ -9,11 +9,6 @@ sealed class PermissionManager {
         override val taskToDoWhenPermissionDeclined:()->Unit,
         override val showRequestPermissionRationale:()->Unit
     ):PermissionManager()
-    class WriteExternalStorage(
-        override val taskToDoWhenPermissionGranted:()->Unit,
-        override val taskToDoWhenPermissionDeclined:()->Unit,
-        override val showRequestPermissionRationale:()->Unit
-    ):PermissionManager()
     class RecordAudio(
         override val taskToDoWhenPermissionGranted:()->Unit,
         override val taskToDoWhenPermissionDeclined:()->Unit,

@@ -21,23 +21,10 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
         nextFocus = {coreManager.composeManagerEvent(ComposeManager.NextFocus)},
         showToast = { coreManager.composeManagerEvent(ComposeManager.ShowToast(it))},
         navigateTo = { route ->  coreManager.composeManagerEvent(ComposeManager.Navigate { navigate(route) })},
-        goToSettings ={coreManager.activityManagerEvent(StartActivityManager.GoToSettings)},
-        goToSendEmail = {address,subject,body->coreManager.activityManagerEvent(StartActivityManager.GoToSendEmail(address,subject,body))},
-        startCustomIntent = {coreManager.activityManagerEvent(StartActivityManager.CustomIntent(it))},
 
-
-        requestPermissionCamera = {
+        requestCameraPermission = {
             coreManager.permissionManagerEvent(
                 PermissionManager.Camera(
-                    taskToDoWhenPermissionGranted = {},
-                    showRequestPermissionRationale = {},
-                    taskToDoWhenPermissionDeclined = {}
-                )
-            )
-        },
-        requestPermissionWriteExternalStorage = {
-            coreManager.permissionManagerEvent(
-                PermissionManager.WriteExternalStorage(
                     taskToDoWhenPermissionGranted = {},
                     showRequestPermissionRationale = {},
                     taskToDoWhenPermissionDeclined = {}
@@ -48,15 +35,15 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
             coreManager.permissionManagerEvent(
                 PermissionManager.ReadExternalStorage(
                     taskToDoWhenPermissionGranted = {},
-                    showRequestPermissionRationale = {},
-                    taskToDoWhenPermissionDeclined = {}
+                    showRequestPermissionRationale = {coreManager.activityManagerEvent(StartActivityManager.GoToSettings)},
+                    taskToDoWhenPermissionDeclined = {coreManager.composeManagerEvent(ComposeManager.ShowToast(TextManager.ResourceText(R.string.test_toast_resource)))}
                 )
             )
         },
         requestCustomPermission = {
             coreManager.permissionManagerEvent(
                 PermissionManager.CustomPermission(
-                    permission = Manifest.permission.CALL_PHONE,
+                    permission = it,
                     taskToDoWhenPermissionGranted = {}, showRequestPermissionRationale = {}, taskToDoWhenPermissionDeclined = {}
                 )
             )
@@ -65,11 +52,23 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
             coreManager.permissionManagerEvent(
                 PermissionManager.RecordAudio(
                     taskToDoWhenPermissionGranted = {Log.d("TestPermission","taskToDoWhenPermissionGranted")},
-                    showRequestPermissionRationale = {Log.d("TestPermission","showRequestPermissionRationale")},
+                    showRequestPermissionRationale = {coreManager.activityManagerEvent(StartActivityManager.GoToSettings)},
                     taskToDoWhenPermissionDeclined = {Log.d("TestPermission","taskToDoWhenPermissionDeclined")}
                 )
             )
         },
+        requestCallPhonePermission = {
+            coreManager.permissionManagerEvent(PermissionManager.CallPhone(
+                taskToDoWhenPermissionGranted = { coreManager.activityManagerEvent(StartActivityManager.StartCallPhone("+963966994266"))},
+                showRequestPermissionRationale = { coreManager.activityManagerEvent(StartActivityManager.GoToSettings) },
+                taskToDoWhenPermissionDeclined = {coreManager.composeManagerEvent(ComposeManager.ShowToast(R.string.test_toast_resource.asTextManager()))}
+             )
+         )
+        },
+
+        goToSettings ={coreManager.activityManagerEvent(StartActivityManager.GoToSettings)},
+        goToSendEmail = {address,subject,body->coreManager.activityManagerEvent(StartActivityManager.GoToSendEmail(address,subject,body))},
+        startCustomIntent = {coreManager.activityManagerEvent(StartActivityManager.CustomIntent(it))},
 
         startPhoneCall = {phoneNumber->
             coreManager.permissionManagerEvent(PermissionManager.CallPhone(
@@ -87,23 +86,17 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
             ))
         } ,
         startActivityForResult ={intent->
-            coreManager.activityForResultManagerEvent(ActivityForResultManager.CustomActivityForResult(intent){ val activityResult=it() })
+            coreManager.permissionManagerEvent(PermissionManager.ReadExternalStorage(
+                taskToDoWhenPermissionGranted = { coreManager.activityForResultManagerEvent(ActivityForResultManager.PickImageFromGallery { val imageFile=it()}) },
+                showRequestPermissionRationale = { coreManager.activityManagerEvent(StartActivityManager.GoToSettings) },
+                taskToDoWhenPermissionDeclined = {coreManager.composeManagerEvent(ComposeManager.ShowToast(TextManager.ResourceText(R.string.test_toast_resource)))}
+            ))
         },
-
-
-
-
-
-
 
 
         setText1 = {newText->_mainUIState.update { it.copy(textField1 =newText ) }},
         setText2 = {newText->_mainUIState.update { it.copy(textField2 =newText ) }},
         setText3 = {newText->_mainUIState.update { it.copy(textField3 =newText ) }},
-
-
-
-
     )
     private val _mainUIState:MutableStateFlow<MainUIState> = MutableStateFlow(MainUIState())
     val mainUIState:StateFlow<MainUIState> =_mainUIState
@@ -113,13 +106,17 @@ data class MainUIState(
     val textField1:String="",val textField2:String="",val textField3:String=""
 )
 data class MainUIEvent(
-    val setText1:(String)->Unit, val setText2:(String)->Unit, val setText3:(String)->Unit,
-    val hideKeyBoard:()->Unit, val nextFocus:()->Unit, val popUp:()->Unit, val showToast:(TextManager)->Unit,
-    val requestReadExternalStoragePermission:()->Unit, val requestPermissionWriteExternalStorage:()->Unit,
-    val requestRecordAudioPermission:()->Unit, val requestPermissionCamera:()->Unit,
-    val requestCustomPermission:(String)->Unit,
-    val pickImageFromGallery:()->Unit, val startActivityForResult:(Intent)->Unit,
-    val goToSettings:()->Unit, val startPhoneCall:(phone:String)->Unit,
-    val goToSendEmail:(email:String,subject:String,body:String)->Unit,val startCustomIntent:(intent: Intent)->Unit,
-    val navigateTo:(route:String)->Unit
-)
+        val setText1:(String)->Unit, val setText2:(String)->Unit, val setText3:(String)->Unit,
+
+        val hideKeyBoard:()->Unit, val nextFocus:()->Unit, val popUp:()->Unit, val showToast:(TextManager)->Unit,
+        val goToSettings:()->Unit, val navigateTo:(route:String)->Unit,
+
+        val requestReadExternalStoragePermission:()->Unit, val requestRecordAudioPermission:()->Unit,
+        val requestCameraPermission:()->Unit, val requestCustomPermission:(String)->Unit,
+        val requestCallPhonePermission:()->Unit,
+
+        val pickImageFromGallery:()->Unit, val startActivityForResult:(Intent)->Unit,
+        val startPhoneCall:(phone:String)->Unit,
+        val goToSendEmail:(email:String,subject:String,body:String)->Unit, val startCustomIntent:(intent: Intent)->Unit,
+
+    )
