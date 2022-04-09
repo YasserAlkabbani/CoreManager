@@ -6,8 +6,9 @@ With CoreManager, You Can Request Permission, Pick Images, Or Navigating From Vi
 
 Note : To Use This Library You Must Use ViewModel ,Hilt For Dependency Injection ,Single Activity App
 
-Some Feature Support Compose Only For Now ,But I Will Support View System Soon ...
+Some Feature Support Compose Only For Now ...
 
+[![](https://jitpack.io/v/YasserAlkabbani/CoreManager.svg)](https://jitpack.io/#YasserAlkabbani/CoreManager)
 
 
 How To Use ?
