@@ -3,7 +3,7 @@ package com.yasser.coremanager.manager
 import androidx.navigation.NavHostController
 
 sealed class ComposeManager {
-    object Idle:ComposeManager()
+    internal object Idle:ComposeManager()
     object HideKeyBoard: ComposeManager()
     object NextFocus: ComposeManager()
     object Popup: ComposeManager()

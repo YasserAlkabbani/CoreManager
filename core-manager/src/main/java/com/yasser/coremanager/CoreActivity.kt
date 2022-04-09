@@ -171,7 +171,7 @@ open class CoreActivity : FragmentActivity() {
                     ComposeManager.HideKeyBoard -> localSoftwareKeyboardController?.hide()
                     ComposeManager.NextFocus -> localFocusManager.moveFocus(FocusDirection.Next)
                     ComposeManager.Popup -> navController.popBackStack()
-                    is ComposeManager.Navigate -> { it.navigate.also { navigate-> navController.navigate() } }
+                    is ComposeManager.Navigate -> it.navigate.also { navigate-> navController.navigate() }
                     is ComposeManager.ShowToast -> Toast.makeText(context,it.textManager.getText(context), Toast.LENGTH_SHORT).show()
                 }
                 delay(200)
