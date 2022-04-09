@@ -73,7 +73,7 @@ afterEvaluate {
                 from components.release
                 groupId 'com.yasser.coremanager'
                 artifactId "core-manager"
-                version "0.1.3-alpha"
+                version "0.1.4-alpha"
             }
         }
     }

@@ -7,7 +7,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -79,6 +78,34 @@ open class CoreActivity : FragmentActivity() {
         coreManager.setComposeManagerEvent {
             coreViewModel.setComposeManager(it)
         }
+        coreManager.setStartActivity {
+            when(it){
+                StartActivityManager.GoToSettings -> {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    intent.data = Uri.parse("package:$packageName")
+                    startActivity(intent)
+                }
+                is StartActivityManager.StartCallPhone -> {
+                    val intent = Intent().apply {
+                        action = Intent.ACTION_CALL
+                        data = Uri.parse("tel: ${it.phoneNumber}")
+                    }
+                    startActivity(intent)
+                }
+                is StartActivityManager.GoToSendEmail -> {
+                    val intent = Intent().apply {
+//                        Intent.ACTION_SEND
+                        action=Intent.ACTION_VIEW
+                        type = "*/*"
+                        data=Uri.parse("mailto:"+it.emailAddress+"?subject="+ it.subject +"&body="+ it.body)
+//                        putExtra(Intent.EXTRA_EMAIL, it.emailAddress)
+//                        putExtra(Intent.EXTRA_SUBJECT, "Email Subject")
+                    }
+                    startActivity(intent)
+                }
+                is StartActivityManager.CustomIntent -> startActivity(it.intent)
+            }
+        }
         coreManager.setPermissionManagerEvent {
             when(it){
                 is PermissionManager.Camera -> checkPermission(
@@ -126,31 +153,7 @@ open class CoreActivity : FragmentActivity() {
                 is ActivityForResultManager.CustomActivityForResult -> getContent.launch(activityForResultManager.intent)
             }
         }
-        coreManager.setStartActivity {
-            when(it){
-                StartActivityManager.GoToSettings -> {
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    intent.data = Uri.parse("package:$packageName")
-                    startActivity(intent)
-                }
-                is StartActivityManager.StartCallPhone -> {
-                    val intent = Intent().apply {
-                        action = Intent.ACTION_CALL
-                        data = Uri.parse("tel: ${it.phoneNumber}")
-                    }
-                    startActivity(intent)
-                }
-                is StartActivityManager.GoToSendEmail -> {
-                    val intent = Intent(Intent.ACTION_SEND).apply {
-                        type = "*/*"
-                        putExtra(Intent.EXTRA_EMAIL, it.emailAddress)
-                        putExtra(Intent.EXTRA_SUBJECT, "Email Subject")
-                    }
-                    startActivity(intent)
-                }
-                is StartActivityManager.CustomIntent -> startActivity(it.intent)
-            }
-        }
+
         
     }
     @OptIn(ExperimentalComposeUiApi::class)
@@ -168,7 +171,7 @@ open class CoreActivity : FragmentActivity() {
                     ComposeManager.HideKeyBoard -> localSoftwareKeyboardController?.hide()
                     ComposeManager.NextFocus -> localFocusManager.moveFocus(FocusDirection.Next)
                     ComposeManager.Popup -> navController.popBackStack()
-                    is ComposeManager.Navigate -> {Log.d("CoreManager","Navigate To ${it.route}");navController.navigate(it.route)}
+                    is ComposeManager.Navigate -> { it.navigate.also { navigate-> navController.navigate() } }
                     is ComposeManager.ShowToast -> Toast.makeText(context,it.textManager.getText(context), Toast.LENGTH_SHORT).show()
                 }
                 delay(200)
