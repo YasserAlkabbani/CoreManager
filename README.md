@@ -12,7 +12,10 @@ Some Feature Support Compose Only For Now ,But I Will Support View System Soon .
 
 How To Use ?
 
-1 - Add This Line To dependencies ```implementation 'com.github.YasserAlkabbani:CoreManager:0.1.3-alpha'```
+1 - Add This Line To dependencies 
+```
+implementation 'com.github.YasserAlkabbani:CoreManager:0.1.3-alpha'
+```
 
 2 - repository In settings.gradle
 ```
