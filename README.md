@@ -91,5 +91,5 @@ coreManager.composeManagerEvent(ComposeManager.Popup)
 coreManager.composeManagerEvent(ComposeManager.HideKeyBoard)
 coreManager.composeManagerEvent(ComposeManager.NextFocus)
 coreManager.composeManagerEvent(ComposeManager.ShowToast(it))
-coreManager.composeManagerEvent(ComposeManager.Navigate(route))
+coreManager.composeManagerEvent(ComposeManager.Navigate { navigate(route) })
 ```
