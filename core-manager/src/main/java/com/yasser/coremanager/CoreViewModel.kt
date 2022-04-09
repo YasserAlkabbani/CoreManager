@@ -12,7 +12,7 @@ import javax.inject.Inject
 class CoreViewModel @Inject constructor():ViewModel() {
 
     private val _composeManager:MutableStateFlow<ComposeManager> = MutableStateFlow(ComposeManager.Idle)
-    val composeManager:StateFlow<ComposeManager> =_composeManager
-    fun setComposeManager(newComposeManager: ComposeManager){_composeManager.update { newComposeManager }}
+    internal val composeManager:StateFlow<ComposeManager> =_composeManager
+    internal fun setComposeManager(newComposeManager: ComposeManager){_composeManager.update { newComposeManager }}
 
 }

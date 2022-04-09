@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.filterNot
 import java.io.File
 import javax.inject.Inject
 
-
 open class CoreActivity : FragmentActivity() {
 
     private val requestPermissionLauncher =
@@ -113,9 +112,6 @@ open class CoreActivity : FragmentActivity() {
                 )
                 is PermissionManager.ReadExternalStorage ->checkPermission(
                     Manifest.permission.READ_EXTERNAL_STORAGE,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
-                )
-                is PermissionManager.WriteExternalStorage ->checkPermission(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
                 )
                 is PermissionManager.RecordAudio ->checkPermission(
                     Manifest.permission.RECORD_AUDIO,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
