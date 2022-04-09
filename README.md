@@ -12,18 +12,28 @@ Some Feature Support Compose Only For Now ,But I Will Support View System Soon .
 
 How To Use ?
 
-1 - Make Your Activity Inherit From CoreActivity (Instead Of Activity Or FragmentActivity)
+1 - Add This Line To dependencies ```implementation 'com.github.YasserAlkabbani:CoreManager:0.1.3-alpha'```
+
+2 - repository In settings.gradle
+```
+repositories {
+  google()
+  mavenCentral()
+  maven { url 'https://jitpack.io' }
+}
+```
+3 - Make Your Activity Inherit From CoreActivity (Instead Of Activity Or FragmentActivity)
 ```
 @AndroidEntryPoint
 class ExampleActivity : CoreActivity() 
 ```
 
-2 - Inject CoreManager In ViewModel Constructor
+4 - Inject CoreManager In ViewModel Constructor
 ```
 @HiltViewModel
 class ExampleViewModel @Inject constructor(private val coreManager:CoreManager):ViewModel()
 ```
-To Use With JitPack Compose Put Your Code Inside CoreManagerContent
+5 - To Use With JitPack Compose Put Your Code Inside CoreManagerContent
 
 ```
 setContent {
