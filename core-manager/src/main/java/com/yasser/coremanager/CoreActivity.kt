@@ -1,12 +1,14 @@
 package com.yasser.coremanager
 
 import android.Manifest
+import android.content.ClipData
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -103,6 +106,19 @@ open class CoreActivity : FragmentActivity() {
                     startActivity(intent)
                 }
                 is StartActivityManager.CustomIntent -> startActivity(it.intent)
+                is StartActivityManager.ShareFile -> {
+                    val fileExt= MimeTypeMap.getFileExtensionFromUrl(it.file.path)
+                    val fileMima= MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt)
+                    val fileUri= FileProvider.getUriForFile(this, "com.my_file.fileprovider", it.file)
+                    val intent:Intent =Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_STREAM, fileUri)
+                        type=fileMima
+                        clipData = ClipData.newRawUri("", fileUri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                    }
+                    startActivity(Intent.createChooser(intent, "Share File By"))
+                }
             }
         }
         coreManager.setPermissionManagerEvent {
