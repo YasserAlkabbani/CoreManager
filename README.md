@@ -81,6 +81,7 @@ Example:
 coreManager.activityManagerEvent(StartActivityManager.GoToSettings)
 coreManager.activityManagerEvent(StartActivityManager.GoToSendEmail(emailAddress))
 coreManager.activityManagerEvent(StartActivityManager.CustomIntent(intent)
+coreManager.activityManagerEvent(StartActivityManager.ShareFile(file))
 ```
 
 4 - ComposeManager : Helper For Compose System
