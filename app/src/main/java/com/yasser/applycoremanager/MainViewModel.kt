@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -98,7 +99,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
 
         requestManagerWithState = {
             viewModelScope.launch {
-                requestProcessWithState {
+                coreManager.requestProcessWithState {
                     delay(1000)
                     "TASK RESULT WITH STATE"
                 }.collect{
@@ -109,7 +110,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                     }
                 }
                 delay(3000)
-                requestProcessWithState(
+                coreManager.requestProcessWithState(
                     forceRefreshData = true,
                     taskForRefreshData = {
                         delay(1000)
@@ -127,7 +128,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                     }
                 }
                 delay(3000)
-                requestProcessWithState(
+                coreManager.requestProcessWithState(
                     forceRefreshData = false,
                     taskForRefreshData = {
                         delay(1000)
@@ -145,7 +146,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                     }
                 }
 
-                requestProcessWithState(
+                coreManager.requestProcessWithState(
                     forceRefreshData = true,
                     taskForRefreshData = {
                         delay(1000)
@@ -166,7 +167,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
         },
         requestManagerWithResult = {
             viewModelScope.launch {
-                val result1=requestProcessWithResult {
+                val result1=coreManager.requestProcessWithResult {
                     delay(1000)
                     "TASK RESULT WITH STATE AS STATE"
                 }
@@ -175,7 +176,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                     is ResultManager.Failed -> Log.d("CoreManager",result1.throwable.message.orEmpty())
                 }
                 delay(3000)
-                val result2=requestProcessWithResult (
+                val result2=coreManager.requestProcessWithResult (
                     forceRefreshData = true,
                     taskForRefreshData = {
                         delay(1000)
@@ -191,7 +192,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                     is ResultManager.Failed -> Log.d("CoreManager",result2.throwable.message.orEmpty())
                 }
                 delay(3000)
-                val result3=requestProcessWithResult (
+                val result3=coreManager.requestProcessWithResult (
                     forceRefreshData = false,
                     taskForRefreshData = {null},
                     taskForReturnData = {
@@ -203,7 +204,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                     is ResultManager.Success -> Log.d("CoreManager",result3.result.orEmpty())
                     is ResultManager.Failed -> Log.d("CoreManager",result3.throwable.message.orEmpty())
                 }
-                val result4=requestProcessWithResult (
+                val result4=coreManager.requestProcessWithResult (
                     forceRefreshData = true,
                     taskForRefreshData = {null},
                     taskForReturnData = {
@@ -211,6 +212,8 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                         throw Throwable("TASK RESULT WITH STATE RETURN ERROR AS STATE")
                     }
                 )
+                val file=File("")
+                coreManager.activityManagerEvent(StartActivityManager.ShareFile(file))
                 when(result4){
                     is ResultManager.Success -> Log.d("CoreManager",result4.result.orEmpty())
                     is ResultManager.Failed -> Log.d("CoreManager",result4.throwable.message.orEmpty())
