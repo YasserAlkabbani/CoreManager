@@ -2,9 +2,10 @@ package com.yasser.coremanager.manager
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withContext
 
 sealed class ResultManagerWithState<out T> {
-    class Loading(progress:Int):ResultManagerWithState<Nothing>()
+    class Loading(val progress:Int):ResultManagerWithState<Nothing>()
     class Success<R>(val result:R):ResultManagerWithState<R>()
     class Failed(val throwable: Throwable):ResultManagerWithState<Nothing>()
 }
@@ -34,14 +35,16 @@ suspend fun <T>requestProcessWithResult(
     forceRefreshData:Boolean=false,
     taskForReturnData:suspend ()->T?,
 ):ResultManager<T?>{
-    return try {
-        val oldData=taskForReturnData()
-        val freshData=if (forceRefreshData||oldData==null){
-            taskForRefreshData();taskForReturnData()
-        }else oldData
-        ResultManager.Success(freshData)
-    }catch (t:Throwable){
-        ResultManager.Failed(t)
+    return withContext(Dispatchers.IO){
+        try {
+            val oldData=taskForReturnData()
+            val freshData=if (forceRefreshData||oldData==null){
+                taskForRefreshData();taskForReturnData()
+            }else oldData
+            ResultManager.Success(freshData)
+        }catch (t:Throwable){
+            ResultManager.Failed(t)
+        }
     }
 }
 
