@@ -24,6 +24,26 @@ sealed class PermissionManager {
         override val taskToDoWhenPermissionDeclined:()->Unit,
         override val showRequestPermissionRationale:()->Unit
     ):PermissionManager()
+    class SendSMSPermission(
+        override val taskToDoWhenPermissionGranted:()->Unit,
+        override val taskToDoWhenPermissionDeclined:()->Unit,
+        override val showRequestPermissionRationale:()->Unit,
+    ):PermissionManager()
+    class ReadCallLogPermission(
+        override val taskToDoWhenPermissionGranted:()->Unit,
+        override val taskToDoWhenPermissionDeclined:()->Unit,
+        override val showRequestPermissionRationale:()->Unit,
+    ):PermissionManager()
+    class WriteCallLogPermission(
+        override val taskToDoWhenPermissionGranted:()->Unit,
+        override val taskToDoWhenPermissionDeclined:()->Unit,
+        override val showRequestPermissionRationale:()->Unit,
+    ):PermissionManager()
+    class ReadPhoneStatePermission(
+        override val taskToDoWhenPermissionGranted:()->Unit,
+        override val taskToDoWhenPermissionDeclined:()->Unit,
+        override val showRequestPermissionRationale:()->Unit,
+    ):PermissionManager()
     class CustomPermission(
         val permission:String,
         override val taskToDoWhenPermissionGranted:()->Unit,

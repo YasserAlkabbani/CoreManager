@@ -132,9 +132,27 @@ open class CoreActivity : FragmentActivity() {
                 is PermissionManager.RecordAudio ->checkPermission(
                     Manifest.permission.RECORD_AUDIO,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
                 )
+                is PermissionManager.SendSMSPermission ->checkPermission(
+                    Manifest.permission.SEND_SMS,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
+                )
                 is PermissionManager.CallPhone -> checkPermission(
                     Manifest.permission.CALL_PHONE,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
                 )
+                is PermissionManager.ReadPhoneStatePermission -> {
+                    checkPermission(
+                        Manifest.permission.READ_PHONE_STATE,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
+                    )
+                }
+                is PermissionManager.ReadCallLogPermission -> {
+                    checkPermission(
+                        Manifest.permission.READ_CALL_LOG,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
+                    )
+                }
+                is PermissionManager.WriteCallLogPermission -> {
+                    checkPermission(
+                        Manifest.permission.WRITE_CALL_LOG,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
+                    )
+                }
                 is PermissionManager.CustomPermission ->checkPermission(
                     it.permission,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
                 )
