@@ -52,8 +52,6 @@ setContent {
 
 And That's it ... Now You Can Use CoreManager In Your ViewModel
 
-CoreManager Have Four Type For Now ...
-
 1- PermissionManager : For Request Permission
 Example:
  ```
@@ -85,7 +83,7 @@ coreManager.activityManagerEvent(StartActivityManager.GoToSendEmail(emailAddress
 coreManager.activityManagerEvent(StartActivityManager.CustomIntent(intent)
 ```
 
-4- ComposeManager : Helper For Compose System
+4 - ComposeManager : Helper For Compose System
 Examples:
 ```
 coreManager.composeManagerEvent(ComposeManager.Popup)
@@ -93,4 +91,46 @@ coreManager.composeManagerEvent(ComposeManager.HideKeyBoard)
 coreManager.composeManagerEvent(ComposeManager.NextFocus)
 coreManager.composeManagerEvent(ComposeManager.ShowToast(it))
 coreManager.composeManagerEvent(ComposeManager.Navigate { navigate(route) })
+```
+
+5 - RequestManager
+Examples:
+
+One Shot
+```
+val result1=requestProcessWithResult (
+    forceRefreshData = true,
+    taskForRefreshData = {
+        delay(1000)
+        "TASK RESULT WITH STATE REFRESH AS STATE"
+    },
+    taskForReturnData = {
+        delay(1000)
+        "TASK RESULT WITH STATE RETURN CACHING AS STATE"
+    }
+)
+when(result2){
+    is ResultManager.Success -> Log.d("CoreManager",result2.result.orEmpty())
+    is ResultManager.Failed -> Log.d("CoreManager",result2.throwable.message.orEmpty())
+}
+```
+With State
+```
+requestProcessWithState(
+      forceRefreshData = false,
+      taskForRefreshData = {
+          delay(1000)
+          null
+      },
+      taskForReturnData = {
+          delay(1000)
+          "TASK RESULT WITH STATE RETURN CACHING"
+      }
+  ).collect{
+      when(it){
+          is ResultManagerWithState.Loading -> Log.d("CoreManager","Loading")
+          is ResultManagerWithState.Success -> Log.d("CoreManager",it.result.orEmpty())
+          is ResultManagerWithState.Failed -> Log.d("CoreManager",it.throwable.message.orEmpty())
+      }
+  }
 ```
