@@ -8,7 +8,6 @@ import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
@@ -16,7 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -25,7 +23,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.yasser.applycoremanager.ui.theme.ApplyCoreManagerTheme
 import com.yasser.coremanager.CoreActivity
-import com.yasser.coremanager.manager.PermissionManager
 import com.yasser.coremanager.manager.asTextManager
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -119,6 +116,9 @@ fun MainCompose(){
             /// Start Activity For Result
             item { Button(onClick = {mainUIEvent.pickImageFromGallery()}) { Text(text = "Pick Image From Gallery") }}
             item { Button(onClick = {mainUIEvent.requestRecordAudioPermission()}) { Text(text = "Test Permission") }}
+
+            item { Button(onClick = {mainUIEvent.requestManagerWithState()}) { Text(text = "Request With State") }}
+            item { Button(onClick = {mainUIEvent.requestManagerWithResult()}) { Text(text = "Request With Result") }}
 
     })
 }
