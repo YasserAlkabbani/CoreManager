@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -119,6 +120,11 @@ open class CoreActivity : FragmentActivity() {
                     }
                     startActivity(Intent.createChooser(intent, "Share File By"))
                 }
+                is StartActivityManager.RestartApp -> {
+                    val resetIntent:Intent=baseContext.packageManager.getLaunchIntentForPackage(baseContext.packageName)!!
+                    finishAffinity()
+                    startActivity(resetIntent)
+                }
             }
         }
         coreManager.setPermissionManagerEvent {
@@ -212,13 +218,6 @@ open class CoreActivity : FragmentActivity() {
         content()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        coreManager.setComposeManagerEvent {  }
-        coreManager.setPermissionManagerEvent {  }
-        coreManager.setActivityForResultManagerEvent {  }
-        coreManager.setStartActivity {  }
-    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
