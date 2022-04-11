@@ -1,5 +1,6 @@
 package com.yasser.coremanager.manager
 
+import android.util.Log
 import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -7,7 +8,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@ActivityScoped
+@Singleton
 class CoreManager @Inject constructor(){
 
     lateinit var composeManagerEvent:(ComposeManager)->Unit

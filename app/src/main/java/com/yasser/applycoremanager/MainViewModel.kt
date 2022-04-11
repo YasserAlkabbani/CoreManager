@@ -70,7 +70,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
          )
         },
 
-        goToSettings ={coreManager.activityManagerEvent(StartActivityManager.GoToSettings)},
+        goToSettings ={coreManager.activityManagerEvent(StartActivityManager.RestartApp)},
         goToSendEmail = {address,subject,body->coreManager.activityManagerEvent(StartActivityManager.GoToSendEmail(address,subject,body))},
         startCustomIntent = {coreManager.activityManagerEvent(StartActivityManager.CustomIntent(it))},
 
