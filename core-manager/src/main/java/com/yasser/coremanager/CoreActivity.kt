@@ -217,6 +217,7 @@ open class CoreActivity : FragmentActivity() {
         coreManager.setComposeManagerEvent {  }
         coreManager.setPermissionManagerEvent {  }
         coreManager.setActivityForResultManagerEvent {  }
+        coreManager.setStartActivity {  }
     }
 }
 
