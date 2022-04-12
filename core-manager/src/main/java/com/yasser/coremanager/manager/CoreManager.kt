@@ -33,31 +33,29 @@ class CoreManager @Inject constructor(){
     }
 
     suspend fun <T>requestProcessWithState(
-        taskForRefreshData:suspend ()->T?={null},
-        forceRefreshData:Boolean=false,
-        taskForReturnData:suspend ()->T?,
-    ): Flow<ResultManagerWithState<T?>> {
-        return flow<ResultManagerWithState<T?>> {
+        taskForRefreshData:suspend ()->Unit={}, forceRefreshData:Boolean=false, taskForReturnData:suspend ()->T?,
+    ): Flow<ResultManagerWithState<T>> {
+        return flow<ResultManagerWithState<T>> {
             val oldData=taskForReturnData()
             val freshData=if (forceRefreshData||oldData==null){
-                taskForRefreshData();taskForReturnData()
+                taskForRefreshData()
+                taskForReturnData()!!
             }else oldData
             ResultManager.Success(freshData)
             emit(ResultManagerWithState.Success(freshData))
-        }.onStart { emit(ResultManagerWithState.Loading(0)) }
+        }.onStart { emit(ResultManagerWithState.Loading()) }
             .catch { emit(ResultManagerWithState.Failed(it)) }
             .flowOn(Dispatchers.IO)
     }
     suspend fun <T>requestProcessWithResult(
-        taskForRefreshData:suspend ()->T?={null},
-        forceRefreshData:Boolean=false,
-        taskForReturnData:suspend ()->T?,
-    ):ResultManager<T?>{
+        taskForRefreshData:suspend ()->Unit={}, forceRefreshData:Boolean=false, taskForReturnData:suspend ()->T?,
+    ):ResultManager<T>{
         return withContext(Dispatchers.IO){
             try {
                 val oldData=taskForReturnData()
                 val freshData=if (forceRefreshData||oldData==null){
-                    taskForRefreshData();taskForReturnData()
+                    taskForRefreshData()
+                    taskForReturnData()!!
                 }else oldData
                 ResultManager.Success(freshData)
             }catch (t:Throwable){

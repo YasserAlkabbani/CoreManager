@@ -79,7 +79,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                 taskToDoWhenPermissionGranted = {coreManager.activityManagerEvent(StartActivityManager.StartCallPhone(phoneNumber))},
                 showRequestPermissionRationale = {coreManager.activityManagerEvent(StartActivityManager.GoToSettings)},
                 taskToDoWhenPermissionDeclined = {coreManager.composeManagerEvent(ComposeManager.ShowToast(TextManager.ResourceText(R.string.test_toast_resource)))},
-            )
+                )
             )
         },
         pickImageFromGallery ={
