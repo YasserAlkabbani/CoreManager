@@ -1,7 +1,5 @@
 package com.yasser.coremanager.manager
 
-import android.util.Log
-import dagger.hilt.android.scopes.ActivityScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
@@ -11,25 +9,36 @@ import javax.inject.Singleton
 @Singleton
 class CoreManager @Inject constructor(){
 
-    lateinit var composeManagerEvent:(ComposeManager)->Unit
-    private set
-    internal fun setComposeManagerEvent(newComposeManagerEvent:(ComposeManager)->Unit)
-    {composeManagerEvent=newComposeManagerEvent}
+    var currentActivity:String?=null
+    internal fun setCurrentActivity(newActivity:String){currentActivity=newActivity}
 
-    lateinit var permissionManagerEvent:(PermissionManager)->Unit
+    var composeManagerEvent:(ComposeManager)->Unit ={}
     private set
-    internal fun setPermissionManagerEvent(newPermissionManagerEvent: (PermissionManager)->Unit)
-    {permissionManagerEvent=newPermissionManagerEvent}
+    internal fun setComposeManagerEvent(selectedActivity:String,newComposeManagerEvent:(ComposeManager)->Unit) {
+        if (selectedActivity==currentActivity)composeManagerEvent=newComposeManagerEvent
+    }
 
-    lateinit var activityForResultManagerEvent:(ActivityForResultManager)->Unit
+    var permissionManagerEvent:(PermissionManager)->Unit={}
     private set
-    internal fun setActivityForResultManagerEvent(newActivityForResultManagerEvent:(ActivityForResultManager)->Unit)
-    {activityForResultManagerEvent=newActivityForResultManagerEvent}
+    internal fun setPermissionManagerEvent(selectedActivity:String,newPermissionManagerEvent: (PermissionManager)->Unit) {
+        if (selectedActivity==currentActivity)permissionManagerEvent=newPermissionManagerEvent
+    }
 
-    lateinit var activityManagerEvent:(StartActivityManager)->Unit
+    var activityForResultManagerEvent:(ActivityForResultManager)->Unit={}
     private set
-    internal fun setStartActivity(newStartActivity:(newStartActivityManager:StartActivityManager)->Unit){
-        activityManagerEvent=newStartActivity
+    internal fun setActivityForResultManagerEvent(selectedActivity:String,newActivityForResultManagerEvent:(ActivityForResultManager)->Unit) {
+        if (selectedActivity==currentActivity)activityForResultManagerEvent=newActivityForResultManagerEvent
+    }
+
+    var activityManagerEvent:(StartActivityManager)->Unit={}
+    private set
+    internal fun setStartActivity(selectedActivity:String,newStartActivity:(newStartActivityManager:StartActivityManager)->Unit){
+        if (selectedActivity==currentActivity)activityManagerEvent=newStartActivity
+    }
+
+    var stringByRes:(stringRes:Int)->String ={""}
+    internal fun setStringFromRes(selectedActivity:String,newStringFrom:(stringRes:Int)->String){
+        if (selectedActivity==currentActivity) stringByRes=newStringFrom
     }
 
     suspend fun <T>requestProcessWithState(
