@@ -37,8 +37,8 @@ class CoreManager @Inject constructor(){
     }
 
     var stringByRes:(stringRes:Int)->String ={""}
-    internal fun setStringFromRes(selectedActivity:String,newStringFrom:(stringRes:Int)->String){
-        if (selectedActivity==currentActivity) stringByRes=newStringFrom
+    internal fun setStringFromRes(selectedActivity:String, newStringByRes:(stringRes:Int)->String){
+        if (selectedActivity==currentActivity) stringByRes=newStringByRes
     }
 
     suspend fun <T>requestProcessWithState(
