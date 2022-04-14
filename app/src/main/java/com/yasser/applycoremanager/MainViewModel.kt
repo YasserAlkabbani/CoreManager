@@ -10,7 +10,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -70,7 +69,9 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
          )
         },
 
-        goToSettings ={coreManager.activityManagerEvent(StartActivityManager.RestartApp)},
+        goToSettings ={coreManager.activityManagerEvent(StartActivityManager.GoToSettings)},
+        restartApp = {coreManager.activityManagerEvent(StartActivityManager.RestartApp)},
+        getStringFromRes = {Log.d("TestCoreManager", coreManager.stringByRes(it))},
         goToSendEmail = {address,subject,body->coreManager.activityManagerEvent(StartActivityManager.GoToSendEmail(address,subject,body))},
         startCustomIntent = {coreManager.activityManagerEvent(StartActivityManager.CustomIntent(it))},
 
@@ -236,7 +237,9 @@ data class MainUIEvent(
     val setText1:(String)->Unit, val setText2:(String)->Unit, val setText3:(String)->Unit,
 
     val hideKeyBoard:()->Unit, val nextFocus:()->Unit, val popUp:()->Unit, val showToast:(TextManager)->Unit,
-    val goToSettings:()->Unit, val navigateTo:(route:String)->Unit,
+    val goToSettings:()->Unit,val restartApp:()->Unit, val navigateTo:(route:String)->Unit,
+
+    val getStringFromRes:(Int)->Unit,
 
     val requestReadExternalStoragePermission:()->Unit, val requestRecordAudioPermission:()->Unit,
     val requestCameraPermission:()->Unit, val requestCustomPermission:(String)->Unit,

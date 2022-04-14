@@ -111,6 +111,8 @@ fun MainCompose(){
             item { Button(onClick = {mainUIEvent.goToSendEmail("yasser@Yasser.com","EMAIL_SUBJECT","EMAIL_BODY")}) { Text(text = "Send Email") }}
             item { Button(onClick = {mainUIEvent.startPhoneCall("+963930345510")}) { Text(text = "Start Call Phone") }}
             item { Button(onClick = {mainUIEvent.goToSettings()}) { Text(text = "Go To Settings") }}
+            item { Button(onClick = {mainUIEvent.restartApp()}) { Text(text = "Restart App") }}
+            item { Button(onClick = {mainUIEvent.getStringFromRes(R.string.test_toast_resource)}) { Text(text = "String From Res") }}
             item { Button(onClick = {mainUIEvent.startCustomIntent(Intent().apply { action = Intent.ACTION_DIAL;data = Uri.parse("tel: +963966994266") })}) { Text(text = "Start Call Phone") }}
 
             /// Start Activity For Result

@@ -75,13 +75,20 @@ open class CoreActivity : FragmentActivity() {
     lateinit var coreManager: CoreManager
     private val coreViewModel:CoreViewModel by viewModels()
 
+    override fun onDestroy() {
+        super.onDestroy()
+        coreManager.setComposeManagerEvent(this.toString()){}
+        coreManager.setStartActivity(this.toString()){}
+        coreManager.setPermissionManagerEvent(this.toString()){}
+        coreManager.setActivityForResultManagerEvent(this.toString()){}
+        coreManager.setStringFromRes(this.toString()){""}
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        coreManager.setComposeManagerEvent {
-            coreViewModel.setComposeManager(it)
-        }
-        coreManager.setStartActivity {
+        coreManager.setCurrentActivity(this.toString())
+        coreManager.setComposeManagerEvent(this.toString()) { coreViewModel.setComposeManager(it) }
+        coreManager.setStartActivity(this.toString()) {
             when(it){
                 StartActivityManager.GoToSettings -> {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
@@ -127,7 +134,7 @@ open class CoreActivity : FragmentActivity() {
                 }
             }
         }
-        coreManager.setPermissionManagerEvent {
+        coreManager.setPermissionManagerEvent(this.toString()) {
             when(it){
                 is PermissionManager.Camera -> checkPermission(
                     Manifest.permission.CAMERA,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
@@ -164,7 +171,7 @@ open class CoreActivity : FragmentActivity() {
                 )
             }
         }
-        coreManager.setActivityForResultManagerEvent {activityForResultManager->
+        coreManager.setActivityForResultManagerEvent(this.toString()) {activityForResultManager->
             when(activityForResultManager){
                 is ActivityForResultManager.PickImageFromGallery -> {
                     val intent:Intent = Intent().apply {
@@ -189,6 +196,7 @@ open class CoreActivity : FragmentActivity() {
                 is ActivityForResultManager.CustomActivityForResult -> getContent.launch(activityForResultManager.intent)
             }
         }
+        coreManager.setStringFromRes(this.toString()){getString(it)}
 
         
     }
