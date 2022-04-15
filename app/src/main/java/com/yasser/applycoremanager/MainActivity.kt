@@ -105,7 +105,8 @@ fun MainCompose(){
             item { Button(onClick = {mainUIEvent.requestRecordAudioPermission()}) { Text(text = "Record Audio Permission") }}
             item { Button(onClick = {mainUIEvent.requestCameraPermission()}) { Text(text = "Request Camera Permission") }}
             item { Button(onClick = {mainUIEvent.requestCallPhonePermission()}) { Text(text = "Request Call Phone Permission") }}
-            item { Button(onClick = {mainUIEvent.requestCustomPermission(Manifest.permission.ACCESS_FINE_LOCATION)}) { Text(text = "Request Location Permission") }}
+            item { Button(onClick = {mainUIEvent.requestLocationPermission()}) { Text(text = "Request Location Permission") }}
+            item { Button(onClick = {mainUIEvent.requestCustomPermission(Manifest.permission.ACCESS_COARSE_LOCATION)}) { Text(text = "Request Custom Permission") }}
 
             /// Start Activity
             item { Button(onClick = {mainUIEvent.goToSendEmail("yasser@Yasser.com","EMAIL_SUBJECT","EMAIL_BODY")}) { Text(text = "Send Email") }}

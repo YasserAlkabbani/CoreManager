@@ -44,6 +44,11 @@ sealed class PermissionManager {
         override val taskToDoWhenPermissionDeclined:()->Unit,
         override val showRequestPermissionRationale:()->Unit,
     ):PermissionManager()
+    class LocationPermission(
+        override val taskToDoWhenPermissionGranted:()->Unit,
+        override val taskToDoWhenPermissionDeclined:()->Unit,
+        override val showRequestPermissionRationale:()->Unit,
+    ):PermissionManager()
     class CustomPermission(
         val permission:String,
         override val taskToDoWhenPermissionGranted:()->Unit,

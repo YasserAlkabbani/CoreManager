@@ -51,6 +51,13 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                 )
             )
         },
+        requestLocationPermission = {
+            coreManager.permissionManagerEvent(
+                PermissionManager.LocationPermission(
+                    taskToDoWhenPermissionGranted = {}, showRequestPermissionRationale = {}, taskToDoWhenPermissionDeclined = {}
+                )
+            )
+        },
         requestRecordAudioPermission = {
             coreManager.permissionManagerEvent(
                 PermissionManager.RecordAudio(
@@ -243,7 +250,7 @@ data class MainUIEvent(
 
     val requestReadExternalStoragePermission:()->Unit, val requestRecordAudioPermission:()->Unit,
     val requestCameraPermission:()->Unit, val requestCustomPermission:(String)->Unit,
-    val requestCallPhonePermission:()->Unit,
+    val requestCallPhonePermission:()->Unit,val requestLocationPermission:()->Unit,
 
     val pickImageFromGallery:()->Unit, val startActivityForResult:(Intent)->Unit,
     val startPhoneCall:(phone:String)->Unit,
