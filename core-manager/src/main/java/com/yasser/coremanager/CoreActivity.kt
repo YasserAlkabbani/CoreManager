@@ -166,6 +166,11 @@ open class CoreActivity : FragmentActivity() {
                         Manifest.permission.WRITE_CALL_LOG,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
                     )
                 }
+                is PermissionManager.LocationPermission -> {
+                    checkPermission(
+                        Manifest.permission.ACCESS_FINE_LOCATION,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
+                    )
+                }
                 is PermissionManager.CustomPermission ->checkPermission(
                     it.permission,it.taskToDoWhenPermissionGranted,it.taskToDoWhenPermissionDeclined,it.showRequestPermissionRationale
                 )
