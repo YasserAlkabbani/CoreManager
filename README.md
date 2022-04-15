@@ -136,3 +136,10 @@ requestProcessWithState(
       }
   }
 ```
+
+6 - Other
+
+Get String By Res
+```
+val string:String = coreManager.stringByRes(res)
+```
