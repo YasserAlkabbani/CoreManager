@@ -198,7 +198,10 @@ open class CoreActivity : FragmentActivity() {
                         }
                     }
                 }
-                is ActivityForResultManager.CustomActivityForResult -> getContent.launch(activityForResultManager.intent)
+                is ActivityForResultManager.CustomActivityForResult -> {
+                    getContent.launch(activityForResultManager.intent)
+                    processContentData={ activityForResultManager.dataToReturn{it()}}
+                }
             }
         }
         coreManager.setStringFromRes(this.toString()){getString(it)}
