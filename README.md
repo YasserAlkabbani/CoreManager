@@ -26,18 +26,47 @@ repositories {
   maven { url 'https://jitpack.io' }
 }
 ```
-3 - Make Your Activity Inherit From CoreActivity (Instead Of Activity Or FragmentActivity)
+
+3 - In Manifist File
+```
+  <application
+      .....
+      <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${packageName}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_path" />
+      </provider>
+      .....
+  </application>
+```
+
+in res -> xml -> Add file_path -> In file_path Add This
+```
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-files-path name="my_images" path="." />
+    <files-path name="my_file" path="."/>
+    <external-path name="external" path="." />
+    <cache-path name="cache" path="." />
+</paths>
+```
+
+4 - Make Your Activity Inherit From CoreActivity (Instead Of Activity Or FragmentActivity)
 ```
 @AndroidEntryPoint
 class ExampleActivity : CoreActivity() 
 ```
 
-4 - Inject CoreManager In ViewModel Constructor
+5 - Inject CoreManager In ViewModel Constructor
 ```
 @HiltViewModel
 class ExampleViewModel @Inject constructor(private val coreManager:CoreManager):ViewModel()
 ```
-5 - To Use With JitPack Compose Put Your Code Inside CoreManagerContent
+6 - To Use With JitPack Compose Put Your Code Inside CoreManagerContent
 
 ```
 setContent {
