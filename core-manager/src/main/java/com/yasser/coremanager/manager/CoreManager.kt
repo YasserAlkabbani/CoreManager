@@ -30,10 +30,23 @@ class CoreManager @Inject constructor(){
         if (selectedActivity==currentActivity)activityForResultManagerEvent=newActivityForResultManagerEvent
     }
 
-    var activityManagerEvent:(StartActivityManager)->Unit={}
+    var startActivityManagerEvent:(StartActivityManager)->Unit={}
     private set
-    internal fun setStartActivity(selectedActivity:String,newStartActivity:(newStartActivityManager:StartActivityManager)->Unit){
-        if (selectedActivity==currentActivity)activityManagerEvent=newStartActivity
+    internal fun setStartActivityEvent(selectedActivity:String, newStartActivityManagerEvent:(newStartActivityManager:StartActivityManager)->Unit){
+        if (selectedActivity==currentActivity)startActivityManagerEvent=newStartActivityManagerEvent
+    }
+
+    var dateTimeManagerEvent:(DateTimeManager)->Unit={}
+    private set
+    internal fun setDateTimePickerEvent(selectedActivity: String,newDateTimeManagerEvent:(DateTimeManager)->Unit){
+        if (currentActivity==selectedActivity) dateTimeManagerEvent=newDateTimeManagerEvent
+    }
+
+
+    var dialogManagerEvent:(DialogManager)->Unit={}
+    private set
+    internal fun setDialogManager(selectedActivity: String,newDialogManagerEvent:(DialogManager)->Unit){
+        if (currentActivity==selectedActivity)dialogManagerEvent=newDialogManagerEvent
     }
 
     var stringByRes:(stringRes:Int)->String ={""}
@@ -43,17 +56,17 @@ class CoreManager @Inject constructor(){
 
     suspend fun <T>requestProcessWithState(
         taskForRefreshData:suspend ()->Unit={}, forceRefreshData:Boolean=false, taskForReturnData:suspend ()->T?,
-    ): Flow<ResultManagerWithState<T>> {
-        return flow<ResultManagerWithState<T>> {
+    ): Flow<ResultManagerWithProgress<T>> {
+        return flow<ResultManagerWithProgress<T>> {
             val oldData=taskForReturnData()
             val freshData=if (forceRefreshData||oldData==null){
                 taskForRefreshData()
                 taskForReturnData()!!
             }else oldData
             ResultManager.Success(freshData)
-            emit(ResultManagerWithState.Success(freshData))
-        }.onStart { emit(ResultManagerWithState.Loading()) }
-            .catch { emit(ResultManagerWithState.Failed(it)) }
+            emit(ResultManagerWithProgress.Success(freshData))
+        }.onStart { emit(ResultManagerWithProgress.Loading()) }
+            .catch { emit(ResultManagerWithProgress.Failed(it)) }
             .flowOn(Dispatchers.IO)
     }
     suspend fun <T>requestProcessWithResult(

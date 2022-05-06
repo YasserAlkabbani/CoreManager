@@ -28,7 +28,6 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : CoreActivity() {
-    private val mainViewModel: MainViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -46,18 +45,6 @@ class MainActivity : CoreActivity() {
                             composable(NavigationManager.MainCompose.name){
                                 Log.d("CoreManager","MainCompose")
                                 MainCompose()
-                            }
-                            composable(NavigationManager.Greeting1.name){
-                                Log.d("CoreManager","Greeting1")
-                                Greeting1("11111111111")
-                            }
-                            composable(NavigationManager.Greeting2.name){
-                                Log.d("CoreManager","Greeting2")
-                                Greeting2("22222222222")
-                            }
-                            composable(NavigationManager.Greeting3.name){
-                                Log.d("CoreManager","Greeting3")
-                                Greeting3("33333333333")
                             }
                         }
                     }
@@ -93,6 +80,7 @@ fun MainCompose(){
             /// Compose Manager
             item { Button(onClick = {mainUIEvent.hideKeyBoard()}) { Text(text = "Hide KeyBoard") }}
             item { Button(onClick = {mainUIEvent.nextFocus()}) { Text(text = "Next Focus") }}
+            item { Button(onClick = {mainUIEvent.downFocus()}) { Text(text = "Down Focus") }}
             item { Button(onClick = {mainUIEvent.popUp()}) { Text(text = "Popup") }}
             item { Button(onClick = {mainUIEvent.showToast("Test String Toast".asTextManager())}) { Text(text = "Show String Toast") }}
             item { Button(onClick = {mainUIEvent.showToast(R.string.test_toast_resource.asTextManager())}) { Text(text = "Show Resource Toast") }}
@@ -122,6 +110,17 @@ fun MainCompose(){
 
             item { Button(onClick = {mainUIEvent.requestManagerWithState()}) { Text(text = "Request With State") }}
             item { Button(onClick = {mainUIEvent.requestManagerWithResult()}) { Text(text = "Request With Result") }}
+
+            item { Button(onClick = {mainUIEvent.pickDate()}) { Text(text = mainUIState.selectedDate) }}
+            item { Button(onClick = {mainUIEvent.pickTime()}) { Text(text = mainUIState.selectedTime) }}
+
+            item {
+                Button(onClick = {mainUIEvent.showDialog {
+                    Button(onClick = { mainUIEvent.hideDialog() }) { Text(text = "Hide Dialog") }
+                }}) { Text(text = "Show Dialog") } }
+
+            item { Button(onClick = {mainUIEvent.imageCaptureAndShare()}) { Text(text = "Image Capture And Share") }}
+            item { Button(onClick = {mainUIEvent.imageCaptureAndOpen()}) { Text(text = "Image Capture And Open") }}
 
     })
 }

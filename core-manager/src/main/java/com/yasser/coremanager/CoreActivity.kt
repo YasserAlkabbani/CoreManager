@@ -7,34 +7,46 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.Settings
-import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import com.yasser.coremanager.manager.*
 import com.yasser.coremanager.manager.ComposeManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
-open class CoreActivity : FragmentActivity() {
+open class CoreActivity : AppCompatActivity() {
 
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
@@ -77,63 +89,20 @@ open class CoreActivity : FragmentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+
         coreManager.setComposeManagerEvent(this.toString()){}
-        coreManager.setStartActivity(this.toString()){}
+        coreManager.setStartActivityEvent(this.toString()){}
         coreManager.setPermissionManagerEvent(this.toString()){}
         coreManager.setActivityForResultManagerEvent(this.toString()){}
+        coreManager.setDateTimePickerEvent(this.toString()){}
         coreManager.setStringFromRes(this.toString()){""}
+
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         coreManager.setCurrentActivity(this.toString())
         coreManager.setComposeManagerEvent(this.toString()) { coreViewModel.setComposeManager(it) }
-        coreManager.setStartActivity(this.toString()) {
-            when(it){
-                StartActivityManager.GoToSettings -> {
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    intent.data = Uri.parse("package:$packageName")
-                    startActivity(intent)
-                }
-                is StartActivityManager.StartCallPhone -> {
-                    val intent = Intent().apply {
-                        action = Intent.ACTION_CALL
-                        data = Uri.parse("tel: ${it.phoneNumber}")
-                    }
-                    startActivity(intent)
-                }
-                is StartActivityManager.GoToSendEmail -> {
-                    val intent = Intent().apply {
-//                        Intent.ACTION_SEND
-                        action=Intent.ACTION_VIEW
-                        type = "*/*"
-                        data=Uri.parse("mailto:"+it.emailAddress+"?subject="+ it.subject +"&body="+ it.body)
-//                        putExtra(Intent.EXTRA_EMAIL, it.emailAddress)
-//                        putExtra(Intent.EXTRA_SUBJECT, "Email Subject")
-                    }
-                    startActivity(intent)
-                }
-                is StartActivityManager.CustomIntent -> startActivity(it.intent)
-                is StartActivityManager.ShareFile -> {
-                    val fileExt= MimeTypeMap.getFileExtensionFromUrl(it.file.path)
-                    val fileMima= MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt)
-                    val fileUri= FileProvider.getUriForFile(this, "com.my_file.fileprovider", it.file)
-                    val intent:Intent =Intent().apply {
-                        action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_STREAM, fileUri)
-                        type=fileMima
-                        clipData = ClipData.newRawUri("", fileUri)
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                    }
-                    startActivity(Intent.createChooser(intent, "Share File By"))
-                }
-                is StartActivityManager.RestartApp -> {
-                    val resetIntent:Intent=baseContext.packageManager.getLaunchIntentForPackage(baseContext.packageName)!!
-                    finishAffinity()
-                    startActivity(resetIntent)
-                }
-            }
-        }
         coreManager.setPermissionManagerEvent(this.toString()) {
             when(it){
                 is PermissionManager.Camera -> checkPermission(
@@ -180,7 +149,7 @@ open class CoreActivity : FragmentActivity() {
             when(activityForResultManager){
                 is ActivityForResultManager.PickImageFromGallery -> {
                     val intent:Intent = Intent().apply {
-                        type = "image/*";
+                        type = "image/*"
                         action = Intent.ACTION_PICK
                     }
                     val intentChooser=Intent.createChooser(intent, "Select Picture")
@@ -198,40 +167,175 @@ open class CoreActivity : FragmentActivity() {
                         }
                     }
                 }
+                is ActivityForResultManager.CaptureImageByCamera -> {
+                    val imageFile= File.createTempFile(System.currentTimeMillis().toString(),".jpg")
+                    val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                    val photoURI: Uri = FileProvider.getUriForFile(this, "${activityForResultManager.packageName}.fileprovider", imageFile)
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                    getContent.launch(takePictureIntent)
+                    processContentData={
+                        val activityResult=it()
+                        if (activityResult.resultCode== RESULT_OK){
+                            activityForResultManager.dataToReturn{imageFile}
+                        }
+                    }
+                }
                 is ActivityForResultManager.CustomActivityForResult -> {
                     getContent.launch(activityForResultManager.intent)
                     processContentData={ activityForResultManager.dataToReturn{it()}}
                 }
             }
         }
+        coreManager.setStartActivityEvent(this.toString()) {
+            when(it){
+                StartActivityManager.GoToSettings -> {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    intent.data = Uri.parse("package:$packageName")
+                    startActivity(intent)
+                }
+                StartActivityManager.RestartApp -> {
+                    val resetIntent:Intent=baseContext.packageManager.getLaunchIntentForPackage(baseContext.packageName)!!
+                    finishAffinity()
+                    startActivity(resetIntent)
+                }
+                is StartActivityManager.StartCallPhone -> {
+                    val intent = Intent().apply {
+                        action = Intent.ACTION_CALL
+                        data = Uri.parse("tel: ${it.phoneNumber}")
+                    }
+                    startActivity(intent)
+                }
+                is StartActivityManager.GoToSendEmail -> {
+                    val intent = Intent().apply {
+                        action=Intent.ACTION_VIEW
+                        type = "*/*"
+                        data=Uri.parse("mailto:"+it.emailAddress+"?subject="+ it.subject +"&body="+ it.body)
+                    }
+                    startActivity(intent)
+                }
+                is StartActivityManager.CustomIntent -> startActivity(it.intent)
+                is StartActivityManager.ShareFile -> {
+                    val fileExt= MimeTypeMap.getFileExtensionFromUrl(it.file.path)
+                    val fileMime= MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt)
+                    val fileUri= FileProvider.getUriForFile(this, "${it.packageName}.fileprovider", it.file)
+                    val intent:Intent =Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_STREAM, fileUri)
+                        type=fileMime
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)// or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                        clipData = ClipData.newRawUri("Open File", fileUri)
+                    }
+                    startActivity(Intent.createChooser(intent, "Share By"))
+                }
+                is StartActivityManager.OpenFile->{
+                    val fileExt= MimeTypeMap.getFileExtensionFromUrl(it.file.path)
+                    val fileMime= MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt)
+                    val fileUri=FileProvider.getUriForFile(this,"${it.packageName}.fileprovider",it.file)
+                    val intent = Intent().apply {
+                        action=Intent.ACTION_VIEW
+                        type=fileMime
+                        data=fileUri
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        clipData = ClipData.newRawUri("Open File", fileUri)
+                    }
+                    startActivity(Intent.createChooser(intent,"Open By"))
+//                    chooserIntent.resolveActivity(packageManager)?.let{startActivity(chooserIntent)}
+                }
+
+            }
+        }
+        coreManager.setDateTimePickerEvent(this.toString()){dateTimeManager->
+            when(dateTimeManager){
+                is DateTimeManager.PickDate -> {
+                    val datePicker =
+                        MaterialDatePicker.Builder.datePicker()
+                            .setTitleText("Select date")
+                            .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                            .build()
+                    datePicker.show(supportFragmentManager, "Pick Date")
+                    datePicker.addOnPositiveButtonClickListener { datePicker.dismiss();dateTimeManager.selectedDate {DateData(it)} }
+                    datePicker.addOnNegativeButtonClickListener {datePicker.dismiss()}
+                    datePicker.addOnCancelListener {datePicker.dismiss()}
+                    datePicker.addOnDismissListener {datePicker.dismiss()}
+                }
+                is DateTimeManager.PickTime -> {
+                    val timePicker =
+                        MaterialTimePicker.Builder()
+                            .setTimeFormat(TimeFormat.CLOCK_24H)
+                            .setHour(12)
+                            .setMinute(0)
+                            .setTitleText("Select time")
+                            .build()
+                    timePicker.show(supportFragmentManager,"Time Picker")
+                    timePicker.addOnPositiveButtonClickListener {
+                        timePicker.dismiss()
+                        dateTimeManager.selectedTime {TimeData(timePicker.hour, timePicker.minute)}
+                    }
+                    timePicker.addOnNegativeButtonClickListener {timePicker.dismiss()}
+                    timePicker.addOnCancelListener {timePicker.dismiss()}
+                    timePicker.addOnDismissListener {timePicker.dismiss()}
+                }
+            }
+        }
+        coreManager.setDialogManager(this.toString()){ coreViewModel.setDialogManager(it) }
         coreManager.setStringFromRes(this.toString()){getString(it)}
 
-        
     }
-    @OptIn(ExperimentalComposeUiApi::class)
+    @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
     @Composable
-    fun CoreManagerContent(navController: NavHostController, content:@Composable ()->Unit){
+    fun CoreManagerContent(navController: NavHostController, screenContent:@Composable ()->Unit){
+
         val coreViewModel:CoreViewModel = viewModel()
         val context= LocalContext.current
         val localSoftwareKeyboardController= LocalSoftwareKeyboardController.current
         val localFocusManager= LocalFocusManager.current
+        val dialogManager=coreViewModel.dialogManager.collectAsState().value
+        val hideDialog:()->Unit =coreViewModel::setHideDialog
+
+
+        val modalBottomSheetState:ModalBottomSheetState= rememberModalBottomSheetState(
+            initialValue = ModalBottomSheetValue.Hidden,
+            skipHalfExpanded = true,
+            confirmStateChange = {
+                if (it ==ModalBottomSheetValue.Hidden)hideDialog()
+                true
+            }
+        )
 
         LaunchedEffect(coreViewModel){
-            coreViewModel.composeManager.filterNot { it is ComposeManager.Idle }.collectLatest {
-                when(it){
-                    ComposeManager.Idle -> {}
-                    ComposeManager.HideKeyBoard -> localSoftwareKeyboardController?.hide()
-                    ComposeManager.NextFocus -> localFocusManager.moveFocus(FocusDirection.Next)
-                    ComposeManager.Popup -> navController.popBackStack()
-                    is ComposeManager.Navigate -> it.navigate.also { navigate-> navController.navigate() }
-                    is ComposeManager.ShowToast -> Toast.makeText(context,it.textManager.getText(context), Toast.LENGTH_SHORT).show()
+            launch {
+                coreViewModel.composeManager.filterNot { it is ComposeManager.Idle }.collectLatest {
+                    when(it){
+                        ComposeManager.Idle -> {}
+                        ComposeManager.HideKeyBoard -> localSoftwareKeyboardController?.hide()
+                        ComposeManager.NextFocus -> localFocusManager.moveFocus(FocusDirection.Next)
+                        ComposeManager.DownFocus -> localFocusManager.moveFocus(FocusDirection.Down)
+                        ComposeManager.Popup -> navController.popBackStack()
+                        is ComposeManager.Navigate -> it.navigate.also { navigate-> navController.navigate() }
+                        is ComposeManager.ShowToast -> Toast.makeText(context,it.textManager.getText(context), Toast.LENGTH_SHORT).show()
+                    }
+                    delay(200)
+                    coreViewModel.setComposeManager(ComposeManager.Idle)
                 }
-                delay(200)
-                coreViewModel.setComposeManager(ComposeManager.Idle)
+            }
+            launch {
+                coreViewModel.dialogManager.collectLatest{
+                    when(it){
+                        DialogManager.Hide -> modalBottomSheetState.hide()
+                        is DialogManager.Show -> modalBottomSheetState.show()
+                    }
+                }
             }
         }
 
-        content()
+        ModalBottomSheetLayout(
+            sheetState =modalBottomSheetState ,
+            sheetContent = { Card(modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)) { Box(Modifier.padding(10.dp)){dialogManager.content()} }},
+            sheetBackgroundColor = Color.Transparent,
+            content =screenContent,
+        )
     }
 
 }
