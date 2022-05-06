@@ -6,5 +6,6 @@ import java.io.File
 
 sealed class ActivityForResultManager {
     class PickImageFromGallery(val dataToReturn: (() -> File) -> Unit):ActivityForResultManager()
+    class CaptureImageByCamera(val packageName:String, val dataToReturn: (() -> File) -> Unit):ActivityForResultManager()
     class CustomActivityForResult(val intent:Intent, val dataToReturn: (() -> ActivityResult) -> Unit):ActivityForResultManager()
 }

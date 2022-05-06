@@ -8,6 +8,7 @@ sealed class StartActivityManager {
     object RestartApp:StartActivityManager()
     class GoToSendEmail(val emailAddress:String,val subject:String,val body:String):StartActivityManager()
     class StartCallPhone(val phoneNumber:String):StartActivityManager()
-    class ShareFile(val file:File):StartActivityManager()
+    class ShareFile(val file:File,val packageName:String):StartActivityManager()
+    class OpenFile(val file:File,val packageName:String):StartActivityManager()
     class CustomIntent(val intent:Intent):StartActivityManager()
 }
