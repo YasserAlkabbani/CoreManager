@@ -330,9 +330,7 @@ open class CoreActivity : AppCompatActivity() {
 
         ModalBottomSheetLayout(
             sheetState =modalBottomSheetState ,
-            sheetContent = { Card(modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp)) { Box(Modifier.padding(10.dp)){dialogManager.content()} }},
+            sheetContent = { dialogManager.dialogManagerContent.DialogContent() },
             sheetBackgroundColor = Color.Transparent,
             content =screenContent,
         )

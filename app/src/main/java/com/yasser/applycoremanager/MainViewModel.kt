@@ -295,5 +295,5 @@ data class MainUIEvent(
 
     val pickDate:()->Unit, val pickTime:()->Unit,
 
-    val showDialog:(content:@Composable ()->Unit)->Unit, val hideDialog:()->Unit
+    val showDialog:(DialogManagerContent)->Unit, val hideDialog:()->Unit
 )

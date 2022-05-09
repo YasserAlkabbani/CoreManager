@@ -23,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.yasser.applycoremanager.ui.theme.ApplyCoreManagerTheme
 import com.yasser.coremanager.CoreActivity
+import com.yasser.coremanager.manager.DialogManagerContent
 import com.yasser.coremanager.manager.asTextManager
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -33,8 +34,8 @@ class MainActivity : CoreActivity() {
         setContent {
             val navController:NavHostController= rememberNavController()
 
-            CoreManagerContent(navController){
-                ApplyCoreManagerTheme {
+            ApplyCoreManagerTheme{
+                CoreManagerContent(navController){
                     // A surface container using the 'background' color from the theme
                     Surface(
                         modifier = Modifier.fillMaxSize(),
@@ -50,7 +51,6 @@ class MainActivity : CoreActivity() {
                     }
                 }
             }
-
         }
     }
 }
@@ -115,9 +115,13 @@ fun MainCompose(){
             item { Button(onClick = {mainUIEvent.pickTime()}) { Text(text = mainUIState.selectedTime) }}
 
             item {
-                Button(onClick = {mainUIEvent.showDialog {
-                    Button(onClick = { mainUIEvent.hideDialog() }) { Text(text = "Hide Dialog") }
-                }}) { Text(text = "Show Dialog") } }
+                Button(onClick = {mainUIEvent.showDialog (
+                    object :DialogManagerContent(){
+                        @Composable override fun DialogContent() {
+                            Button(onClick = { mainUIEvent.hideDialog() }) { Text(text = "Hide Dialog") }
+                        }
+                    }
+                )}) { Text(text = "Show Dialog") } }
 
             item { Button(onClick = {mainUIEvent.imageCaptureAndShare()}) { Text(text = "Image Capture And Share") }}
             item { Button(onClick = {mainUIEvent.imageCaptureAndOpen()}) { Text(text = "Image Capture And Open") }}
