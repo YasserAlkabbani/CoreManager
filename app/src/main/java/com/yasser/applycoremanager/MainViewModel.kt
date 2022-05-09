@@ -2,6 +2,8 @@ package com.yasser.applycoremanager
 
 import android.content.Intent
 import android.util.Log
+import androidx.compose.material.Button
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -262,7 +264,13 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                 _mainUIState.update { it.copy(selectedTime = timeData().getTime()) }
             })
         },
-        showDialog = {coreManager.dialogManagerEvent(DialogManager.Show(it))},
+        showDialog = {coreManager.dialogManagerEvent(DialogManager.Show(
+            object :DialogManagerContent(){
+                @Composable override fun DialogContent() {
+                    Button(onClick = { coreManager.dialogManagerEvent(DialogManager.Hide) }) { Text(text = "Hide Dialog") }
+                }
+            }
+        ))},
         hideDialog = {coreManager.dialogManagerEvent(DialogManager.Hide)}
     )
     private val _mainUIState:MutableStateFlow<MainUIState> = MutableStateFlow(MainUIState())
@@ -295,5 +303,5 @@ data class MainUIEvent(
 
     val pickDate:()->Unit, val pickTime:()->Unit,
 
-    val showDialog:(DialogManagerContent)->Unit, val hideDialog:()->Unit
+    val showDialog:()->Unit, val hideDialog:()->Unit
 )
