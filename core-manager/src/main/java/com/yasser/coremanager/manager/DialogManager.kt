@@ -8,7 +8,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-sealed class DialogManager(val content:@Composable ()->Unit) {
-    object Hide:DialogManager({Surface(modifier = Modifier.fillMaxWidth().height(100.dp)){}})
-    class Show(dialogContent: @Composable () -> Unit) :DialogManager(dialogContent)
+sealed class DialogManager(internal val dialogManagerContent:DialogManagerContent) {
+    object Hide:DialogManager(DialogManagerContentEmpty())
+    class Show(dialogManagerContent:DialogManagerContent) :DialogManager(dialogManagerContent)
+}
+
+abstract class DialogManagerContent{
+    @Composable abstract fun DialogContent()
+}
+
+class DialogManagerContentEmpty:DialogManagerContent(){
+    @Composable override fun DialogContent() { Surface(modifier = Modifier.fillMaxWidth().height(10.dp)){} }
 }
