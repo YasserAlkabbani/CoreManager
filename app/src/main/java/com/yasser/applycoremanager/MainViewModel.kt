@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,7 +26,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
         nextFocus = {coreManager.composeManagerEvent(ComposeManager.NextFocus)},
         downFocus = {coreManager.composeManagerEvent(ComposeManager.DownFocus)},
         showToast = { coreManager.composeManagerEvent(ComposeManager.ShowToast(it))},
-        navigateTo = { route ->  coreManager.composeManagerEvent(ComposeManager.Navigate { navigate(route) })},
+        navigateTo = { destinationManager ->  coreManager.composeManagerEvent(ComposeManager.Navigate(destinationManager))},
 
         requestCameraPermission = {
             coreManager.permissionManagerEvent(
@@ -264,13 +263,9 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                 _mainUIState.update { it.copy(selectedTime = timeData().getTime()) }
             })
         },
-        showDialog = {coreManager.dialogManagerEvent(DialogManager.Show(
-            object :DialogManagerContent(){
-                @Composable override fun DialogContent() {
-                    Button(onClick = { coreManager.dialogManagerEvent(DialogManager.Hide) }) { Text(text = "Hide Dialog") }
-                }
-            }
-        ))},
+        showDialog = {coreManager.dialogManagerEvent(DialogManager.Show {
+            { Button(onClick = { coreManager.dialogManagerEvent(DialogManager.Hide) }) { Text(text = "Hide Dialog") } }
+        })},
         hideDialog = {coreManager.dialogManagerEvent(DialogManager.Hide)}
     )
     private val _mainUIState:MutableStateFlow<MainUIState> = MutableStateFlow(MainUIState())
@@ -285,7 +280,7 @@ data class MainUIEvent(
     val setText1:(String)->Unit, val setText2:(String)->Unit, val setText3:(String)->Unit,
 
     val hideKeyBoard:()->Unit, val nextFocus:()->Unit, val downFocus:()->Unit, val popUp:()->Unit, val showToast:(TextManager)->Unit,
-    val goToSettings:()->Unit, val restartApp:()->Unit, val navigateTo:(route:String)->Unit,
+    val goToSettings:()->Unit, val restartApp:()->Unit, val navigateTo:(DestinationManager)->Unit,
 
     val getStringFromRes:(Int)->Unit,
 

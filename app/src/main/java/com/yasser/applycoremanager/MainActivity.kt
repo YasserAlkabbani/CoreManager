@@ -23,8 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.yasser.applycoremanager.ui.theme.ApplyCoreManagerTheme
 import com.yasser.coremanager.CoreActivity
-import com.yasser.coremanager.manager.DialogManagerContent
-import com.yasser.coremanager.manager.asTextManager
+import com.yasser.coremanager.manager.*
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -34,19 +33,25 @@ class MainActivity : CoreActivity() {
         setContent {
             val navController:NavHostController= rememberNavController()
 
+            val navigationManager:NavigationManager=NavigationManager(
+                destinationsManagerList =listOf(
+                    ApplyCoreManagerDestinationManager.MainCompose,ApplyCoreManagerDestinationManager.Greeting1,
+                    ApplyCoreManagerDestinationManager.Greeting2,ApplyCoreManagerDestinationManager.Greeting3
+                ) ,
+                startDestination =ApplyCoreManagerDestinationManager.MainCompose ,
+                bottomNavigationDestinationList = listOf(ApplyCoreManagerDestinationManager.Greeting1,ApplyCoreManagerDestinationManager.Greeting2) ,
+                navHostController =navController
+            )
             ApplyCoreManagerTheme{
-                CoreManagerContent(navController){
+                CoreManagerContent(navigationManager){
                     // A surface container using the 'background' color from the theme
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colors.background
                     ) {
                         Log.d("CoreManager","MainNavHost")
-                        NavHost(navController = navController, startDestination = NavigationManager.MainCompose.name ){
-                            composable(NavigationManager.MainCompose.name){
-                                Log.d("CoreManager","MainCompose")
-                                MainCompose()
-                            }
+                        NavHost(navController = navController, startDestination = navigationManager.getStartDestination().route ){
+                            navigationManager.getNavHostComposableContent(this)
                         }
                     }
                 }
@@ -84,9 +89,10 @@ fun MainCompose(){
             item { Button(onClick = {mainUIEvent.popUp()}) { Text(text = "Popup") }}
             item { Button(onClick = {mainUIEvent.showToast("Test String Toast".asTextManager())}) { Text(text = "Show String Toast") }}
             item { Button(onClick = {mainUIEvent.showToast(R.string.test_toast_resource.asTextManager())}) { Text(text = "Show Resource Toast") }}
-            item { Button(onClick = {mainUIEvent.navigateTo(NavigationManager.Greeting1.name)}) { Text(text = "Navigate To Greeting 1") }}
-            item { Button(onClick = {mainUIEvent.navigateTo(NavigationManager.Greeting2.name)}) { Text(text = "Navigate To Greeting 2") }}
-            item { Button(onClick = {mainUIEvent.navigateTo(NavigationManager.Greeting3.name)}) { Text(text = "Navigate To Greeting 3") }}
+
+            item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreManagerDestinationManager.Greeting1)}) { Text(text = "Navigate To Greeting 1") }}
+            item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreManagerDestinationManager.Greeting2)}) { Text(text = "Navigate To Greeting 2") }}
+            item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreManagerDestinationManager.Greeting3)}) { Text(text = "Navigate To Greeting 3") }}
 
             /// Permission Manager
             item { Button(onClick = {mainUIEvent.requestReadExternalStoragePermission()}) { Text(text = "Read Storage Permission") }}
@@ -153,9 +159,28 @@ fun Greeting3(name: String) {
     }
 }
 
-enum class NavigationManager(){
-    MainCompose, Greeting1, Greeting2, Greeting3
+sealed class ApplyCoreManagerDestinationManager(){
+    object MainCompose:DestinationManager(
+                    "MainCompose".asTextManager(),"main_compose","",R.drawable.icon_android,
+                    true,true,true,true, { { MainCompose() } }
+                )
+    object Greeting1:DestinationManager(
+                    "Greeting1".asTextManager(),"greeting_1","",R.drawable.icon_android,
+                    true,true,true,true, { { Greeting1("Greeting1") } }
+                )
+    object Greeting2:DestinationManager(
+                    "Greeting2".asTextManager(),"greeting_2","",R.drawable.icon_android,
+                    true,true,true,true, { { Greeting2("Greeting2") } }
+                )
+    object Greeting3:DestinationManager(
+                    "Greeting3".asTextManager(),"greeting_3","",R.drawable.icon_android,
+                    true,true,true,true, { { Greeting3("Greeting3") } }
+                )
 }
+
+//enum class NavigationManager(){
+//    MainCompose, Greeting1, Greeting2, Greeting3
+//}
 
 //@Preview(showBackground = true)
 //@Composable
