@@ -15,25 +15,19 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
@@ -283,7 +277,7 @@ open class CoreActivity : AppCompatActivity() {
     }
     @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
     @Composable
-    fun CoreManagerContent(navController: NavHostController, screenContent:@Composable ()->Unit){
+    fun CoreManagerContent(navigationManager: NavigationManager, screenContent:@Composable ()->Unit){
 
         val coreViewModel:CoreViewModel = viewModel()
         val context= LocalContext.current
@@ -310,8 +304,11 @@ open class CoreActivity : AppCompatActivity() {
                         ComposeManager.HideKeyBoard -> localSoftwareKeyboardController?.hide()
                         ComposeManager.NextFocus -> localFocusManager.moveFocus(FocusDirection.Next)
                         ComposeManager.DownFocus -> localFocusManager.moveFocus(FocusDirection.Down)
-                        ComposeManager.Popup -> navController.popBackStack()
-                        is ComposeManager.Navigate -> it.navigate.also { navigate-> navController.navigate() }
+                        ComposeManager.Popup -> navigationManager.popup()
+                        is ComposeManager.Navigate ->navigationManager.navigate(
+                            it.destinationManager,it.routeValue,it.launchSingleTop,
+                            it.restoreState, it.popUpToDestination, it.saveState, it.inclusive
+                        )
                         is ComposeManager.ShowToast -> Toast.makeText(context,it.textManager.getText(context), Toast.LENGTH_SHORT).show()
                     }
                     delay(200)
@@ -330,7 +327,7 @@ open class CoreActivity : AppCompatActivity() {
 
         ModalBottomSheetLayout(
             sheetState =modalBottomSheetState ,
-            sheetContent = { dialogManager.dialogManagerContent.DialogContent() },
+            sheetContent = { dialogManager.dialogManagerContent()() },
             sheetBackgroundColor = Color.Transparent,
             content =screenContent,
         )
