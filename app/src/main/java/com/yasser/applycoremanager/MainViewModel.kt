@@ -26,7 +26,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
         nextFocus = {coreManager.composeManagerEvent(ComposeManager.NextFocus)},
         downFocus = {coreManager.composeManagerEvent(ComposeManager.DownFocus)},
         showToast = { coreManager.composeManagerEvent(ComposeManager.ShowToast(it))},
-        navigateTo = { destinationManager ->  coreManager.composeManagerEvent(ComposeManager.Navigate(destinationManager))},
+        navigateTo = { destinationManager ->  coreManager.navigationManager.navigate(destinationManager)},
 
         requestCameraPermission = {
             coreManager.permissionManagerEvent(

@@ -306,10 +306,6 @@ open class CoreActivity : AppCompatActivity() {
                         ComposeManager.NextFocus -> localFocusManager.moveFocus(FocusDirection.Next)
                         ComposeManager.DownFocus -> localFocusManager.moveFocus(FocusDirection.Down)
                         ComposeManager.Popup -> coreManager.navigationManager.popup()
-                        is ComposeManager.Navigate ->coreManager.navigationManager.navigate(
-                            it.destinationManager,it.routeValue,it.launchSingleTop,
-                            it.restoreState, it.popUpToDestination, it.saveState, it.inclusive
-                        )
                         is ComposeManager.ShowToast -> Toast.makeText(context,it.textManager.getText(context), Toast.LENGTH_SHORT).show()
                     }
                     delay(200)
