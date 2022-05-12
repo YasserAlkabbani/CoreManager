@@ -12,6 +12,10 @@ class CoreManager @Inject constructor(){
     var currentActivity:String?=null
     internal fun setCurrentActivity(newActivity:String){currentActivity=newActivity}
 
+    lateinit var navigationManager:NavigationManager
+    private set
+    internal fun setNavigationManager(newNavigationManager: NavigationManager){ navigationManager=newNavigationManager }
+
     var composeManagerEvent:(ComposeManager)->Unit ={}
     private set
     internal fun setComposeManagerEvent(selectedActivity:String,newComposeManagerEvent:(ComposeManager)->Unit) {
