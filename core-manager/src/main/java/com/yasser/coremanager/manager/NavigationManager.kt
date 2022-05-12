@@ -44,8 +44,8 @@ class NavigationManager(
 }
 open class DestinationManager(
     val name: TextManager, val route: String, private val routeKey:String, @DrawableRes val icon: Int?,
-    private val haveTopBar: Boolean, private val haveBackButton:Boolean, private val haveBottomNavigation: Boolean,
-    private val haveFloatingActionButton: Boolean, private val composeManagerContent: ()-> @Composable ()->Unit,
+    val haveTopBar: Boolean, val haveBackButton:Boolean, val haveBottomNavigation: Boolean,
+    val haveFloatingActionButton: Boolean, private val composeManagerContent: ()-> @Composable ()->Unit,
 ){
     fun getRouteWithKey()=if (routeKey.isNotBlank())"$route/{$routeKey}" else route
     fun getNavHostComposableContent(navGraphBuilder: NavGraphBuilder){
