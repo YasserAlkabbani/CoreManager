@@ -277,7 +277,7 @@ open class CoreActivity : AppCompatActivity() {
     }
     @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
     @Composable
-    fun CoreManagerContent(navigationManager: NavigationManager, screenContent:@Composable ()->Unit){
+    fun CoreManagerContent(navigationManager: NavigationManager,screenContent:@Composable ()->Unit){
 
         val coreViewModel:CoreViewModel = viewModel()
         val context= LocalContext.current
@@ -287,6 +287,7 @@ open class CoreActivity : AppCompatActivity() {
         val hideDialog:()->Unit =coreViewModel::setHideDialog
 
 
+        coreManager.setNavigationManager(navigationManager)
         val modalBottomSheetState:ModalBottomSheetState= rememberModalBottomSheetState(
             initialValue = ModalBottomSheetValue.Hidden,
             skipHalfExpanded = true,
@@ -304,8 +305,8 @@ open class CoreActivity : AppCompatActivity() {
                         ComposeManager.HideKeyBoard -> localSoftwareKeyboardController?.hide()
                         ComposeManager.NextFocus -> localFocusManager.moveFocus(FocusDirection.Next)
                         ComposeManager.DownFocus -> localFocusManager.moveFocus(FocusDirection.Down)
-                        ComposeManager.Popup -> navigationManager.popup()
-                        is ComposeManager.Navigate ->navigationManager.navigate(
+                        ComposeManager.Popup -> coreManager.navigationManager.popup()
+                        is ComposeManager.Navigate ->coreManager.navigationManager.navigate(
                             it.destinationManager,it.routeValue,it.launchSingleTop,
                             it.restoreState, it.popUpToDestination, it.saveState, it.inclusive
                         )

@@ -31,7 +31,6 @@ class MainActivity : CoreActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val navController:NavHostController= rememberNavController()
 
             val navigationManager:NavigationManager=NavigationManager(
                 destinationsManagerList =listOf(
@@ -40,7 +39,7 @@ class MainActivity : CoreActivity() {
                 ) ,
                 startDestination =ApplyCoreManagerDestinationManager.MainCompose ,
                 bottomNavigationDestinationList = listOf(ApplyCoreManagerDestinationManager.Greeting1,ApplyCoreManagerDestinationManager.Greeting2) ,
-                navHostController =navController
+                navHostController =rememberNavController()
             )
             ApplyCoreManagerTheme{
                 CoreManagerContent(navigationManager){
@@ -49,8 +48,9 @@ class MainActivity : CoreActivity() {
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colors.background
                     ) {
-                        Log.d("CoreManager","MainNavHost")
-                        NavHost(navController = navController, startDestination = navigationManager.getStartDestination().route ){
+                        NavHost(
+                            navController = navigationManager.getNavController(),
+                            startDestination = navigationManager.getStartDestination().route ){
                             navigationManager.getNavHostComposableContent(this)
                         }
                     }
@@ -159,7 +159,7 @@ fun Greeting3(name: String) {
     }
 }
 
-sealed class ApplyCoreManagerDestinationManager(){
+sealed class ApplyCoreManagerDestinationManager{
     object MainCompose:DestinationManager(
                     "MainCompose".asTextManager(),"main_compose","",R.drawable.icon_android,
                     true,true,true,true, { { MainCompose() } }
