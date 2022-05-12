@@ -19,9 +19,9 @@ class NavigationManager(
 
     fun popup(){navHostController.popBackStack()}
     fun navigate(
-        destinationManager: DestinationManager, routeValue:String,
-        launchSingleTop:Boolean, restoreState:Boolean,
-        popUpToDestination:DestinationManager?, saveState:Boolean, inclusive:Boolean
+        destinationManager: DestinationManager, routeValue:String="",
+        launchSingleTop:Boolean=false, restoreState:Boolean=false,
+        popUpToDestination:DestinationManager?=null, saveState:Boolean=false, inclusive:Boolean=false
     ){
         destinationManager.route.let {route->
             navHostController.navigate(if (route.isNotBlank()&&routeValue.isNotBlank())"$route/{$routeValue}" else route){

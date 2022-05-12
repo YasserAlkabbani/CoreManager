@@ -10,10 +10,5 @@ sealed class ComposeManager {
     object DownFocus: ComposeManager()
     object Popup: ComposeManager()
     class ShowToast(val textManager: TextManager):ComposeManager()
-    class Navigate(
-        val destinationManager: DestinationManager, val routeValue:String="",
-        val launchSingleTop:Boolean=false, val restoreState:Boolean=false,
-        val popUpToDestination:DestinationManager?=null,val saveState:Boolean=false,val inclusive:Boolean=false
-    ):ComposeManager()
 }
 
