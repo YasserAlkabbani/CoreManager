@@ -69,10 +69,25 @@ class ExampleViewModel @Inject constructor(private val coreManager:CoreManager):
 6 - To Use With JitPack Compose Put Your Code Inside CoreManagerContent
 
 ```
+sealed class ApplyCoreManagerDestinationManager{
+    object MainCompose:DestinationManager("MainCompose".asTextManager(),"main_compose","",R.drawable.icon_android,true,true,true,true, { { MainCompose()}})
+    object Greeting1:DestinationManager("Greeting1".asTextManager(),"greeting_1","",R.drawable.icon_android,true,true,true,true,{{ Greeting1("Greeting1")}})
+    object Greeting2:DestinationManager("Greeting2".asTextManager(),"greeting_2","",R.drawable.icon_android,true,true,true,true,{{ Greeting2("Greeting2")}})
+    object Greeting3:DestinationManager("Greeting3".asTextManager(),"greeting_3","",R.drawable.icon_android, true,true,true,true,{{ Greeting3("Greeting3")}})
+}
 setContent {
-  val navController:NavHostController= rememberNavController()
+  
+  val navigationManager:NavigationManager=NavigationManager(
+      destinationsManagerList =listOf(
+          ApplyCoreManagerDestinationManager.MainCompose,ApplyCoreManagerDestinationManager.Greeting1,
+          ApplyCoreManagerDestinationManager.Greeting2,ApplyCoreManagerDestinationManager.Greeting3
+      ) ,
+      startDestination =ApplyCoreManagerDestinationManager.MainCompose ,
+      bottomNavigationDestinationList = listOf(ApplyCoreManagerDestinationManager.Greeting1,ApplyCoreManagerDestinationManager.Greeting2) ,
+      navHostController =navController
+  )
 
-  CoreManagerContent(navController) {
+  CoreManagerContent(navigationManager) {
      PUT YOUR CODE HERE
   }
   
