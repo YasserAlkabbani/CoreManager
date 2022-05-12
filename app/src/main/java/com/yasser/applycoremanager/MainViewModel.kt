@@ -21,7 +21,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(private val coreManager:CoreManager):ViewModel() {
 
     val mainUIEvent=MainUIEvent(
-        popUp = {coreManager.composeManagerEvent(ComposeManager.Popup)},
+        popUp = {coreManager.navigationManager.popup()},
         hideKeyBoard = {coreManager.composeManagerEvent(ComposeManager.HideKeyBoard)},
         nextFocus = {coreManager.composeManagerEvent(ComposeManager.NextFocus)},
         downFocus = {coreManager.composeManagerEvent(ComposeManager.DownFocus)},
