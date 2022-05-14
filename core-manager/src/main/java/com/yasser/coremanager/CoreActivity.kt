@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.provider.Settings
+import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -28,15 +29,19 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.yasser.coremanager.manager.*
 import com.yasser.coremanager.manager.ComposeManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 
@@ -285,6 +290,26 @@ open class CoreActivity : AppCompatActivity() {
         val localFocusManager= LocalFocusManager.current
         val dialogManager=coreViewModel.dialogManager.collectAsState().value
         val hideDialog:()->Unit =coreViewModel::setHideDialog
+        val currentDestinationState=navigationManager.navHostController.currentBackStackEntryAsState().value
+
+        LaunchedEffect(key1 = currentDestinationState, block ={
+            withContext(Dispatchers.Default){
+                navigationManager.destinationsManagerList.firstOrNull {destination->
+                    val currentRoute=if (currentDestinationState?.destination?.route?.contains("/") == true)
+                        currentDestinationState.destination.route?.substringBefore("/") else currentDestinationState?.destination?.route
+                    destination.route==currentRoute
+                }?.let {
+                    currentDestinationState?.arguments?.getString(it.arg2Key)?.removePrefix("{")?.removeSuffix("}").let {label->
+                        navigationManager.setCurrentDestination(it.copy(label=(label?.asTextManager()?:it.label)))
+                    }
+                }
+            }
+        } )
+        LaunchedEffect(key1 = navigationManager.currentDestination, block ={
+            navigationManager.currentDestination.collect{
+                Log.d("CoreManager","CurrentDestination ${it.route} ${it.arg1Key} ${it.arg2Key} ${it.label.getText(context)}")
+            }
+        } )
 
 
         coreManager.setNavigationManager(navigationManager)

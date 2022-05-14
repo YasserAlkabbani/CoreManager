@@ -26,8 +26,10 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
         nextFocus = {coreManager.composeManagerEvent(ComposeManager.NextFocus)},
         downFocus = {coreManager.composeManagerEvent(ComposeManager.DownFocus)},
         showToast = { coreManager.composeManagerEvent(ComposeManager.ShowToast(it))},
-        navigateTo = { destinationManager ->  coreManager.navigationManager.navigate(destinationManager)},
-
+        navigateTo = {
+                destinationManager,arg1,arg2 ->
+            coreManager.navigationManager.navigate(destinationManager,arg1,arg2)
+        },
         requestCameraPermission = {
             coreManager.permissionManagerEvent(
                 PermissionManager.Camera(
@@ -280,7 +282,7 @@ data class MainUIEvent(
     val setText1:(String)->Unit, val setText2:(String)->Unit, val setText3:(String)->Unit,
 
     val hideKeyBoard:()->Unit, val nextFocus:()->Unit, val downFocus:()->Unit, val popUp:()->Unit, val showToast:(TextManager)->Unit,
-    val goToSettings:()->Unit, val restartApp:()->Unit, val navigateTo:(DestinationManager)->Unit,
+    val goToSettings:()->Unit, val restartApp:()->Unit, val navigateTo:(DestinationManager,arg1:String?,arg2:String?)->Unit,
 
     val getStringFromRes:(Int)->Unit,
 

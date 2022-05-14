@@ -1,5 +1,6 @@
 package com.yasser.coremanager.manager
 
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.navigation.*
@@ -8,50 +9,57 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class NavigationManager(
-    private val destinationsManagerList:List<DestinationManager>,
-    private val bottomNavigationDestinationList:List<DestinationManager>,
-    private val startDestination:DestinationManager,
-    private val navHostController: NavHostController
+    val destinationsManagerList:List<DestinationManager>,
+    val bottomNavigationDestinationList:List<DestinationManager>,
+    val startDestination:DestinationManager,
+    val navHostController: NavHostController
 ) {
     private val _currentDestination: MutableStateFlow<DestinationManager> by lazy { MutableStateFlow(startDestination) }
     val currentDestination: StateFlow<DestinationManager> = _currentDestination
-    fun setCurrentDestanation(destinationIndex:DestinationManager){_currentDestination.value=destinationIndex}
+    fun setCurrentDestination(destinationManager:DestinationManager){_currentDestination.value=destinationManager}
 
     fun popup(){navHostController.popBackStack()}
     fun navigate(
-        destinationManager: DestinationManager, routeValue:String="",
+        destinationManager: DestinationManager,arg1Value:String?,arg2Value:String?,
         launchSingleTop:Boolean=false, restoreState:Boolean=false,
         popUpToDestination:DestinationManager?=null, saveState:Boolean=false, inclusive:Boolean=false
     ){
-        destinationManager.route.let {route->
-            navHostController.navigate(if (route.isNotBlank()&&routeValue.isNotBlank())"$route/{$routeValue}" else route){
-                this.launchSingleTop=launchSingleTop
-                this.restoreState=restoreState
-                popUpToDestination?.let {
-                    this.popUpTo(it.route){
-                        this.saveState=saveState
-                        this.inclusive=inclusive
-                    }
+        val route= destinationManager.route
+        val arg1=if (!destinationManager.arg1Key.isNullOrBlank())"/${arg1Value}" else ""
+        val arg2=if (!destinationManager.arg2Key.isNullOrBlank())"/${arg2Value}" else ""
+        val fullRoute=route+arg1+arg2
+        navHostController.navigate(fullRoute){
+            this.launchSingleTop=launchSingleTop
+            this.restoreState=restoreState
+            popUpToDestination?.let {
+                this.popUpTo(it.route){
+                    this.saveState=saveState
+                    this.inclusive=inclusive
                 }
             }
         }
     }
-    fun getStartDestination()=startDestination
-    fun getbottomNavigationDestanation():List<DestinationManager> = bottomNavigationDestinationList
-    fun getNavController()=navHostController
     fun getNavHostComposableContent(navGraphBuilder: NavGraphBuilder)=
         destinationsManagerList.map { it.getNavHostComposableContent(navGraphBuilder) }
 }
-open class DestinationManager(
-    val name: TextManager, val route: String, private val routeKey:String, @DrawableRes val icon: Int?,
-    val haveTopBar: Boolean, val haveBackButton:Boolean, val haveBottomNavigation: Boolean,
-    val haveFloatingActionButton: Boolean, private val composeManagerContent: ()-> @Composable ()->Unit,
+data class DestinationManager(
+    val label: TextManager, val route: String, @DrawableRes val icon: Int?,
+    val arg1Key:String?, val arg2Key:String?,
+    val haveTopBar: Boolean, val haveBackButton:Boolean, val haveBottomNavigation: Boolean, val haveFloatingActionButton: Boolean,
+    private val composeManagerContent: ()-> @Composable ()->Unit,
 ){
-    fun getRouteWithKey()=if (routeKey.isNotBlank())"$route/{$routeKey}" else route
+    private fun getRouteWithKey(): String {
+        val arg1=if (!arg1Key.isNullOrBlank())"/{${arg1Key}}" else ""
+        val arg2=if (!arg2Key.isNullOrBlank())"/{${arg2Key}}" else ""
+        return route+arg1+arg2
+    }
     fun getNavHostComposableContent(navGraphBuilder: NavGraphBuilder){
         navGraphBuilder.composable(
             route =getRouteWithKey(),
-            arguments = mutableListOf<NamedNavArgument>().apply { if (routeKey.isNotBlank()) add(navArgument(routeKey){ NavType.StringType })},
+            arguments = mutableListOf<NamedNavArgument>().apply {
+                if (arg1Key!=null) add(navArgument(arg1Key){ NavType.StringType })
+                if (arg2Key!=null) add(navArgument(arg2Key){ NavType.StringType })
+            },
             content = {composeManagerContent()()}
         )
     }
