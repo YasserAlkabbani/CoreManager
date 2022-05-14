@@ -20,23 +20,15 @@ class NavigationManager(
 
     fun popup(){navHostController.popBackStack()}
     fun navigate(
-        destinationManager: DestinationManager,arg1Value:String?,arg2Value:String?,
-        launchSingleTop:Boolean=false, restoreState:Boolean=false,
-        popUpToDestination:DestinationManager?=null, saveState:Boolean=false, inclusive:Boolean=false
+        destinationManager: DestinationManager,arg1Value:String?,arg2Value:String?
     ){
         val route= destinationManager.route
         val arg1=if (!destinationManager.arg1Key.isNullOrBlank())"/${arg1Value}" else ""
         val arg2=if (!destinationManager.arg2Key.isNullOrBlank())"/${arg2Value}" else ""
         val fullRoute=route+arg1+arg2
         navHostController.navigate(fullRoute){
-            this.launchSingleTop=launchSingleTop
-            this.restoreState=restoreState
-            popUpToDestination?.let {
-                this.popUpTo(it.route){
-                    this.saveState=saveState
-                    this.inclusive=inclusive
-                }
-            }
+            val navOptionsBuilder=currentDestination.value.navOptionBuilder(destinationManager)
+            navOptionsBuilder()
         }
     }
     fun getNavHostComposableContent(navGraphBuilder: NavGraphBuilder)=
@@ -46,6 +38,7 @@ data class DestinationManager(
     val label: TextManager, val route: String, @DrawableRes val icon: Int?,
     val arg1Key:String?, val arg2Key:String?,
     val haveTopBar: Boolean, val haveBackButton:Boolean, val haveBottomNavigation: Boolean, val haveFloatingActionButton: Boolean,
+    val navOptionBuilder:(DestinationManager) -> NavOptionsBuilder.()->Unit,
     private val composeManagerContent: ()-> @Composable ()->Unit,
 ){
     private fun getRouteWithKey(): String {

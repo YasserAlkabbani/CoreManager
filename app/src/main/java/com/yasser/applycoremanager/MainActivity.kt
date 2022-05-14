@@ -15,6 +15,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.yasser.applycoremanager.ui.theme.ApplyCoreManagerTheme
@@ -166,27 +167,45 @@ fun Greeting4(name: String) {
 data class ApplyCoreDestinationsManager(
     val mainCompose:DestinationManager=DestinationManager(
         "MainCompose".asTextManager(),"main_compose",R.drawable.icon_android,null,null,
-        true,true,true,true, { { MainCompose() } }
+        true,true,true,true, {
+            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={}
+            navOptionsBuilderExt
+        }, { { MainCompose() } }
     ),
     val greeting1:DestinationManager=DestinationManager(
         "Greeting1".asTextManager(),"greeting_1",R.drawable.icon_android,"G_1_1","G_1_2",
-        true,true,true,true, { { Greeting1("Greeting1") } }
+        true,true,true,true, {
+            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={}
+            navOptionsBuilderExt
+        }, { { Greeting1("Greeting1") } }
     ),
     val greeting2:DestinationManager=DestinationManager(
         "Greeting2".asTextManager(),"greeting_2",R.drawable.icon_android,"G_2_1","G_2_2",
-        true,true,true,true, { { Greeting2("Greeting2") } }
+        true,true,true,true, {
+           val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={}
+            navOptionsBuilderExt
+        }, { { Greeting2("Greeting2") } }
     ),
     val greeting3:DestinationManager=DestinationManager(
         "Greeting3".asTextManager(),"greeting_3",R.drawable.icon_android,"G_3_1",null,
-        true,true,true,true, { { Greeting3("Greeting3") } }
+        true,true,true,true, {
+            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={}
+            navOptionsBuilderExt
+        }, { { Greeting3("Greeting3") } }
     ),
     val greeting4:DestinationManager=DestinationManager(
         "Greeting4".asTextManager(),"greeting_4",R.drawable.icon_android,null,"G_4_2",
-        true,true,true,true, { { Greeting3("Greeting4") } }
+        true,true,true,true, {
+            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={}
+            navOptionsBuilderExt
+        }, { { Greeting3("Greeting4") } }
     ),
     val greeting5:DestinationManager=DestinationManager(
         "Greeting5".asTextManager(),"greeting_5",R.drawable.icon_android,null,null,
-        true,true,true,true, { { Greeting3("Greeting5") } }
+        true,true,true,true, {
+            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={}
+            navOptionsBuilderExt
+        }, { { Greeting3("Greeting5") } }
     )
 ){
     fun getStartDestination()=mainCompose
