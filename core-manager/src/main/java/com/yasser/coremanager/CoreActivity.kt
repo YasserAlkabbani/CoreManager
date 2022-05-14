@@ -305,12 +305,6 @@ open class CoreActivity : AppCompatActivity() {
                 }
             }
         } )
-        LaunchedEffect(key1 = navigationManager.currentDestination, block ={
-            navigationManager.currentDestination.collect{
-                Log.d("CoreManager","CurrentDestination ${it.route} ${it.arg1Key} ${it.arg2Key} ${it.label.getText(context)}")
-            }
-        } )
-
 
         coreManager.setNavigationManager(navigationManager)
         val modalBottomSheetState:ModalBottomSheetState= rememberModalBottomSheetState(
