@@ -1,5 +1,7 @@
 package com.yasser.coremanager.manager
 
+import android.util.Log
+import com.yasser.coremanager.CoreActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
@@ -7,14 +9,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CoreManager @Inject constructor(){
+class CoreManager @Inject constructor(val navigationManager: NavigationManager){
 
-    var currentActivity:String?=null
+    private var currentActivity:String?=null
     internal fun setCurrentActivity(newActivity:String){currentActivity=newActivity}
 
-    lateinit var navigationManager:NavigationManager
+    lateinit var getCurrentActivity:()->CoreActivity?
     private set
-    internal fun setNavigationManager(newNavigationManager: NavigationManager){ navigationManager=newNavigationManager }
+    internal fun setGetCurrentActivity(newGetCurrentActivity:()->CoreActivity?){getCurrentActivity=newGetCurrentActivity}
 
     var composeManagerEvent:(ComposeManager)->Unit ={}
     private set
