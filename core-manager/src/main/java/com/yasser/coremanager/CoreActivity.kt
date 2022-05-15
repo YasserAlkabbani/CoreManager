@@ -12,6 +12,7 @@ import android.provider.Settings
 import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -30,6 +31,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
@@ -37,7 +39,6 @@ import com.yasser.coremanager.manager.*
 import com.yasser.coremanager.manager.ComposeManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
@@ -91,17 +92,21 @@ open class CoreActivity : AppCompatActivity() {
 
         coreManager.setComposeManagerEvent(this.toString()){}
         coreManager.setStartActivityEvent(this.toString()){}
+        coreManager.setGetCurrentActivity { null }
         coreManager.setPermissionManagerEvent(this.toString()){}
         coreManager.setActivityForResultManagerEvent(this.toString()){}
         coreManager.setDateTimePickerEvent(this.toString()){}
         coreManager.setStringFromRes(this.toString()){""}
+        coreManager.setDialogManager(this.toString()){}
+        coreManager.navigationManager.setNavHostController(null)
 
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        coreManager.setCurrentActivity(this.toString())
         coreManager.setComposeManagerEvent(this.toString()) { coreViewModel.setComposeManager(it) }
+        coreManager.setCurrentActivity(this.toString())
+        coreManager.setGetCurrentActivity { this }
         coreManager.setPermissionManagerEvent(this.toString()) {
             when(it){
                 is PermissionManager.Camera -> checkPermission(
@@ -280,72 +285,81 @@ open class CoreActivity : AppCompatActivity() {
         coreManager.setStringFromRes(this.toString()){getString(it)}
 
     }
-    @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterialApi::class)
-    @Composable
-    fun CoreManagerContent(navigationManager: NavigationManager,screenContent:@Composable ()->Unit){
 
-        val coreViewModel:CoreViewModel = viewModel()
-        val context= LocalContext.current
-        val localSoftwareKeyboardController= LocalSoftwareKeyboardController.current
-        val localFocusManager= LocalFocusManager.current
-        val dialogManager=coreViewModel.dialogManager.collectAsState().value
-        val hideDialog:()->Unit =coreViewModel::setHideDialog
-        val currentDestinationState=navigationManager.navHostController.currentBackStackEntryAsState().value
+    @OptIn(ExperimentalComposeUiApi::class,ExperimentalMaterialApi::class)
+    fun coreManagerContent(screenContent:@Composable ()->Unit){
 
-        LaunchedEffect(key1 = currentDestinationState, block ={
-            withContext(Dispatchers.Default){
-                navigationManager.destinationsManagerList.firstOrNull {destination->
-                    val currentRoute=if (currentDestinationState?.destination?.route?.contains("/") == true)
-                        currentDestinationState.destination.route?.substringBefore("/") else currentDestinationState?.destination?.route
-                    destination.route==currentRoute
-                }?.let {
-                    currentDestinationState?.arguments?.getString(it.arg2Key)?.removePrefix("{")?.removeSuffix("}").let {label->
-                        navigationManager.setCurrentDestination(it.copy(label=(label?.asTextManager()?:it.label)))
+        setContent {
+
+            val coreViewModel:CoreViewModel = viewModel()
+            val navHostController= rememberNavController()
+            LaunchedEffect(key1 = navHostController, block = { coreViewModel.setNavHostController(navHostController) })
+
+            val context= LocalContext.current
+            val localSoftwareKeyboardController= LocalSoftwareKeyboardController.current
+            val localFocusManager= LocalFocusManager.current
+            val dialogManager=coreViewModel.dialogManager.collectAsState().value
+            val hideDialog:()->Unit =coreViewModel::setHideDialog
+
+
+
+            val currentDestinationState=coreManager.navigationManager.navHostController.collectAsState().value?.currentBackStackEntryAsState()?.value
+
+            LaunchedEffect(key1 = currentDestinationState, block ={
+                withContext(Dispatchers.Default){
+                    coreManager.navigationManager.destinationsManagerList.firstOrNull { destination->
+                        val currentRoute=if (currentDestinationState?.destination?.route?.contains("/") == true)
+                            currentDestinationState.destination.route?.substringBefore("/") else currentDestinationState?.destination?.route
+                        destination.route==currentRoute
+                    }?.let {
+                        currentDestinationState?.arguments?.getString(it.arg2Key)?.removePrefix("{")?.removeSuffix("}").let {label->
+                            coreManager.navigationManager.setCurrentDestination(it.copy(label=(label?.asTextManager()?:it.label)))
+                        }
+                    }
+                }
+            } )
+
+
+            val modalBottomSheetState:ModalBottomSheetState= rememberModalBottomSheetState(
+                initialValue = ModalBottomSheetValue.Hidden,
+                skipHalfExpanded = true,
+                confirmStateChange = {
+                    if (it ==ModalBottomSheetValue.Hidden)hideDialog()
+                    true
+                }
+            )
+
+            LaunchedEffect(coreViewModel){
+                launch {
+                    coreViewModel.composeManager.filterNot { it is ComposeManager.Idle }.collectLatest {
+                        when(it){
+                            ComposeManager.Idle -> {}
+                            ComposeManager.HideKeyBoard -> localSoftwareKeyboardController?.hide()
+                            ComposeManager.NextFocus -> localFocusManager.moveFocus(FocusDirection.Next)
+                            ComposeManager.DownFocus -> localFocusManager.moveFocus(FocusDirection.Down)
+                            is ComposeManager.ShowToast -> Toast.makeText(context,it.textManager.getText(context), Toast.LENGTH_SHORT).show()
+                        }
+                        delay(200)
+                        coreViewModel.setComposeManager(ComposeManager.Idle)
+                    }
+                }
+                launch {
+                    coreViewModel.dialogManager.collectLatest{
+                        when(it){
+                            DialogManager.Hide -> modalBottomSheetState.hide()
+                            is DialogManager.Show -> modalBottomSheetState.show()
+                        }
                     }
                 }
             }
-        } )
 
-        coreManager.setNavigationManager(navigationManager)
-        val modalBottomSheetState:ModalBottomSheetState= rememberModalBottomSheetState(
-            initialValue = ModalBottomSheetValue.Hidden,
-            skipHalfExpanded = true,
-            confirmStateChange = {
-                if (it ==ModalBottomSheetValue.Hidden)hideDialog()
-                true
-            }
-        )
-
-        LaunchedEffect(coreViewModel){
-            launch {
-                coreViewModel.composeManager.filterNot { it is ComposeManager.Idle }.collectLatest {
-                    when(it){
-                        ComposeManager.Idle -> {}
-                        ComposeManager.HideKeyBoard -> localSoftwareKeyboardController?.hide()
-                        ComposeManager.NextFocus -> localFocusManager.moveFocus(FocusDirection.Next)
-                        ComposeManager.DownFocus -> localFocusManager.moveFocus(FocusDirection.Down)
-                        is ComposeManager.ShowToast -> Toast.makeText(context,it.textManager.getText(context), Toast.LENGTH_SHORT).show()
-                    }
-                    delay(200)
-                    coreViewModel.setComposeManager(ComposeManager.Idle)
-                }
-            }
-            launch {
-                coreViewModel.dialogManager.collectLatest{
-                    when(it){
-                        DialogManager.Hide -> modalBottomSheetState.hide()
-                        is DialogManager.Show -> modalBottomSheetState.show()
-                    }
-                }
-            }
+            ModalBottomSheetLayout(
+                sheetState =modalBottomSheetState ,
+                sheetContent = { dialogManager.dialogManagerContent()() },
+                sheetBackgroundColor = Color.Transparent,
+                content =screenContent,
+            )
         }
-
-        ModalBottomSheetLayout(
-            sheetState =modalBottomSheetState ,
-            sheetContent = { dialogManager.dialogManagerContent()() },
-            sheetBackgroundColor = Color.Transparent,
-            content =screenContent,
-        )
     }
 
 }

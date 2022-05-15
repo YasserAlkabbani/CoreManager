@@ -4,7 +4,8 @@ import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.activity.compose.setContent
+import android.util.Log
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,35 +18,37 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
 import com.yasser.applycoremanager.ui.theme.ApplyCoreManagerTheme
 import com.yasser.coremanager.CoreActivity
 import com.yasser.coremanager.manager.*
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @AndroidEntryPoint
 class MainActivity : CoreActivity() {
+
+    val mainViewModel:MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
 
-            val navigationManager:NavigationManager=NavigationManager(
-                destinationsManagerList =ApplyCoreDestinationsManager().getAllDestination() ,
-                startDestination =ApplyCoreDestinationsManager().getStartDestination() ,
-                bottomNavigationDestinationList = ApplyCoreDestinationsManager().getBottomNavigationDestanition() ,
-                navHostController =rememberNavController()
-            )
+        coreManagerContent{
             ApplyCoreManagerTheme{
-                CoreManagerContent(navigationManager){
-                    // A surface container using the 'background' color from the theme
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colors.background
-                    ) {
+                // A surface container using the 'background' color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background
+                ) {
+                    val navHostController=mainViewModel.coreManager.navigationManager.navHostController.collectAsState().value
+                    navHostController?.let {
                         NavHost(
-                            navController = navigationManager.navHostController,
-                            startDestination = navigationManager.startDestination.route ){
-                            navigationManager.getNavHostComposableContent(this)
+                            navController =navHostController,
+                            startDestination = mainViewModel.coreManager.navigationManager.startDestination.route ){
+                            mainViewModel.coreManager.navigationManager.getNavHostComposableContent(this)
                         }
                     }
                 }
@@ -67,6 +70,11 @@ fun MainCompose(){
 
     val mainUIEvent=mainViewModel.mainUIEvent
     val mainUIState=mainViewModel.mainUIState.collectAsState().value
+    val currentDestination=mainUIState.navigationManager.currentDestination.collectAsState().value
+
+    LaunchedEffect(currentDestination){
+            Log.d("CoreManager","CurrentDetonation MainActivity ${currentDestination.route}")
+    }
 
     LazyColumn(
         content = {
@@ -162,6 +170,17 @@ fun Greeting4(name: String) {
             text = "Hello 4 $name!",fontSize = 30.sp
         )
     }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object NavigationModule {
+    @Singleton @Provides
+    fun provideNavigationManager():NavigationManager= NavigationManager(
+        destinationsManagerList =ApplyCoreDestinationsManager().getAllDestination() ,
+        startDestination =ApplyCoreDestinationsManager().getStartDestination() ,
+        bottomNavigationDestinationList = ApplyCoreDestinationsManager().getBottomNavigationDestanition() ,
+    )
 }
 
 data class ApplyCoreDestinationsManager(

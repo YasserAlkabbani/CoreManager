@@ -13,12 +13,27 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(private val coreManager:CoreManager):ViewModel() {
+class MainViewModel @Inject constructor(
+        val coreManager:CoreManager
+    ):ViewModel() {
+
+
+
+    init {
+        viewModelScope.launch {
+            coreManager.navigationManager.currentDestination.collect{
+                Log.d("CoreManager","CurrentDetonation ViewModel ${it.route}")
+            }
+        }
+    }
+    private val _mainUIState:MutableStateFlow<MainUIState> = MutableStateFlow(MainUIState(navigationManager = coreManager.navigationManager))
+    val mainUIState:StateFlow<MainUIState> =_mainUIState
 
     val mainUIEvent=MainUIEvent(
         popUp = {coreManager.navigationManager.popup()},
@@ -229,7 +244,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                 delay(3000)
                 val result3=coreManager.requestProcessWithResult (
                     forceRefreshData = false,
-                    taskForRefreshData = {null},
+                    taskForRefreshData = {},
                     taskForReturnData = {
                         delay(1000)
                         "TASK RESULT WITH STATE RETURN CACHING AS STATE"
@@ -241,7 +256,7 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
                 }
                 val result4=coreManager.requestProcessWithResult (
                     forceRefreshData = true,
-                    taskForRefreshData = {null},
+                    taskForRefreshData = {},
                     taskForReturnData = {
                         delay(1000)
                         throw Throwable("TASK RESULT WITH STATE RETURN ERROR AS STATE")
@@ -270,13 +285,13 @@ class MainViewModel @Inject constructor(private val coreManager:CoreManager):Vie
         })},
         hideDialog = {coreManager.dialogManagerEvent(DialogManager.Hide)}
     )
-    private val _mainUIState:MutableStateFlow<MainUIState> = MutableStateFlow(MainUIState())
-    val mainUIState:StateFlow<MainUIState> =_mainUIState
+
 }
 
 data class MainUIState(
     val textField1:String="",val textField2:String="",val textField3:String="",
-    val selectedDate:String="Pick Date",val selectedTime:String="Pick Time"
+    val selectedDate:String="Pick Date",val selectedTime:String="Pick Time",
+    val navigationManager: NavigationManager
 )
 data class MainUIEvent(
     val setText1:(String)->Unit, val setText2:(String)->Unit, val setText3:(String)->Unit,
