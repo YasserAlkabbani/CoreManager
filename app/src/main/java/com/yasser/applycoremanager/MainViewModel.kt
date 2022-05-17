@@ -7,6 +7,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.yasser.applycoremanager.ui.theme.ApplyCoreManagerTheme
 import com.yasser.coremanager.manager.*
 import com.yasser.coremanager.manager.ComposeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -281,7 +282,7 @@ class MainViewModel @Inject constructor(
             })
         },
         showDialog = {coreManager.dialogManagerEvent(DialogManager.Show {
-            { Button(onClick = { coreManager.dialogManagerEvent(DialogManager.Hide) }) { Text(text = "Hide Dialog") } }
+            { ApplyCoreManagerTheme{Button(onClick = { coreManager.dialogManagerEvent(DialogManager.Hide) }) { Text(text = "Hide Dialog") }} }
         })},
         hideDialog = {coreManager.dialogManagerEvent(DialogManager.Hide)}
     )

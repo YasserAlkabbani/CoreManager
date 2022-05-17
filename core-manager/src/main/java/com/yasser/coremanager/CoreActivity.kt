@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -359,6 +360,7 @@ open class CoreActivity : AppCompatActivity() {
                 sheetContent = { dialogManager.dialogManagerContent()() },
                 sheetBackgroundColor = Color.Transparent,
                 content =screenContent,
+                sheetElevation = 0.dp
             )
         }
     }
