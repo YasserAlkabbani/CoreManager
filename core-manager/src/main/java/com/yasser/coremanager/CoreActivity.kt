@@ -39,6 +39,7 @@ import com.yasser.coremanager.manager.*
 import com.yasser.coremanager.manager.ComposeManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
@@ -104,8 +105,9 @@ open class CoreActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        coreManager.setComposeManagerEvent(this.toString()) { coreViewModel.setComposeManager(it) }
+
         coreManager.setCurrentActivity(this.toString())
+        coreManager.setComposeManagerEvent(this.toString()) { coreViewModel.setComposeManager(it) }
         coreManager.setGetCurrentActivity { this }
         coreManager.setPermissionManagerEvent(this.toString()) {
             when(it){
@@ -302,7 +304,6 @@ open class CoreActivity : AppCompatActivity() {
             val hideDialog:()->Unit =coreViewModel::setHideDialog
 
 
-
             val currentDestinationState=coreManager.navigationManager.navHostController.collectAsState().value?.currentBackStackEntryAsState()?.value
 
             LaunchedEffect(key1 = currentDestinationState, block ={
@@ -331,7 +332,7 @@ open class CoreActivity : AppCompatActivity() {
 
             LaunchedEffect(coreViewModel){
                 launch {
-                    coreViewModel.composeManager.filterNot { it is ComposeManager.Idle }.collectLatest {
+                    coreViewModel.composeManager.filterNot { it is ComposeManager.Idle }.collect {
                         when(it){
                             ComposeManager.Idle -> {}
                             ComposeManager.HideKeyBoard -> localSoftwareKeyboardController?.hide()
