@@ -61,10 +61,10 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.4.1"
     implementation "androidx.lifecycle:lifecycle-common-java8:2.4.1"
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
 
-    implementation "com.google.dagger:hilt-android:2.39"
-    kapt "com.google.dagger:hilt-compiler:2.38.1"
+    implementation "com.google.dagger:hilt-android:2.40.1"
+    kapt "com.google.dagger:hilt-compiler:2.40.1"
 
 }
 afterEvaluate {
@@ -74,7 +74,7 @@ afterEvaluate {
                 from components.release
                 groupId 'com.yasser.coremanager'
                 artifactId "core-manager"
-                version "0.3.7-alpha"
+                version "0.3.8-alpha"
             }
         }
     }
