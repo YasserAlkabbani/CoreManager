@@ -284,7 +284,10 @@ class MainViewModel @Inject constructor(
         showDialog = {coreManager.dialogManagerEvent(DialogManager.Show {
             { ApplyCoreManagerTheme{Button(onClick = { coreManager.dialogManagerEvent(DialogManager.Hide) }) { Text(text = "Hide Dialog") }} }
         })},
-        hideDialog = {coreManager.dialogManagerEvent(DialogManager.Hide)}
+        hideDialog = {coreManager.dialogManagerEvent(DialogManager.Hide)},
+        pickFile = {coreManager.activityForResultManagerEvent(ActivityForResultManager.PickFile {
+            Log.d("CoreManager","PickFile ${it()})")
+        })}
     )
 
 }
@@ -312,7 +315,7 @@ data class MainUIEvent(
     val startPhoneCall:(phone:String)->Unit,
     val goToSendEmail:(email:String,subject:String,body:String)->Unit, val startCustomIntent:(intent: Intent)->Unit,
 
-    val requestManagerWithState:()->Unit, val requestManagerWithResult:()->Unit,
+    val requestManagerWithState:()->Unit, val requestManagerWithResult:()->Unit,val pickFile:()->Unit,
 
     val pickDate:()->Unit, val pickTime:()->Unit,
 

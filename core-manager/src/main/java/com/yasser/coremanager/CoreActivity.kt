@@ -1,13 +1,16 @@
 package com.yasser.coremanager
 
 import android.Manifest
+import android.app.Activity
 import android.content.ClipData
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.Log
 import android.webkit.MimeTypeMap
@@ -191,6 +194,57 @@ open class CoreActivity : AppCompatActivity() {
                     getContent.launch(activityForResultManager.intent)
                     processContentData={ activityForResultManager.dataToReturn{it()}}
                 }
+                is ActivityForResultManager.PickFile -> {
+                    fun getFile(fileUri:Uri):File{
+                        val fileData= application.contentResolver.query(fileUri, null, null, null, null)?.use {
+                            val nameColumnIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                            it.moveToFirst()
+                            it.getString(nameColumnIndex)
+                        }
+                        val fileName=fileData?.substringBeforeLast(".")
+                        val fileExt=fileData?.substringAfterLast(".")
+
+                        val file:File = File(application.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "$fileName.$fileExt")
+
+                        application.contentResolver.openInputStream(fileUri)?.copyTo(file.outputStream())
+                        return file
+                    }
+
+                    val pickFileIntent:Intent= Intent().apply {
+                        val typeList= arrayOf(
+                            "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "application/pdf", "image/*","audio/*"
+                        )
+                        action=Intent.ACTION_OPEN_DOCUMENT
+                        type = "*/*"
+                        putExtra(Intent.EXTRA_MIME_TYPES,typeList)
+                        putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true)
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                    }
+
+                    getContent.launch(pickFileIntent)
+                    processContentData={
+                        val result=it()
+                        if (result.resultCode == Activity.RESULT_OK){
+                            result.data?.data?.let {
+                                val file:File =getFile(it)
+                                activityForResultManager.dataToReturn{ listOf(file)}
+                            }?: run {
+                                result.data?.clipData?.let {clipDate->
+                                    buildList<File> {
+                                        repeat(clipDate.itemCount){index->
+                                            val file:File =getFile(clipDate.getItemAt(index).uri)
+                                            this.add(file)
+                                        }
+                                    }.let {
+                                        activityForResultManager.dataToReturn{it}
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         coreManager.setStartActivityEvent(this.toString()) {
@@ -248,7 +302,6 @@ open class CoreActivity : AppCompatActivity() {
                     startActivity(Intent.createChooser(intent,"Open By"))
 //                    chooserIntent.resolveActivity(packageManager)?.let{startActivity(chooserIntent)}
                 }
-
             }
         }
         coreManager.setDateTimePickerEvent(this.toString()){dateTimeManager->

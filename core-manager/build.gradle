@@ -63,8 +63,8 @@ dependencies {
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
 
-    implementation "com.google.dagger:hilt-android:2.40.1"
-    kapt "com.google.dagger:hilt-compiler:2.40.1"
+    implementation "com.google.dagger:hilt-android:2.42"
+    kapt "com.google.dagger:hilt-compiler:2.42"
 
 }
 afterEvaluate {
@@ -74,7 +74,7 @@ afterEvaluate {
                 from components.release
                 groupId 'com.yasser.coremanager'
                 artifactId "core-manager"
-                version "0.3.8-alpha"
+                version "0.3.9-alpha"
             }
         }
     }
