@@ -121,6 +121,8 @@ fun MainCompose(){
             item { Button(onClick = {mainUIEvent.requestManagerWithState()}) { Text(text = "Request With State") }}
             item { Button(onClick = {mainUIEvent.requestManagerWithResult()}) { Text(text = "Request With Result") }}
 
+            item { Button(onClick = {mainUIEvent.pickFile()}) { Text(text = "Pick File") }}
+
             item { Button(onClick = {mainUIEvent.pickDate()}) { Text(text = mainUIState.selectedDate) }}
             item { Button(onClick = {mainUIEvent.pickTime()}) { Text(text = mainUIState.selectedTime) }}
 
