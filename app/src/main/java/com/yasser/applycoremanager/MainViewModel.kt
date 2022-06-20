@@ -275,12 +275,10 @@ class MainViewModel @Inject constructor(
         setText3 = {newText->_mainUIState.update { it.copy(textField3 =newText ) }},
         pickDate = {coreManager.dateTimeManagerEvent(DateTimeManager.PickDate { dateData ->
                 _mainUIState.update { it.copy(selectedDate = dateData().getDate()) }
-            })
-        },
+            }) },
         pickTime = {coreManager.dateTimeManagerEvent(DateTimeManager.PickTime{timeData->
                 _mainUIState.update { it.copy(selectedTime = timeData().getTime()) }
-            })
-        },
+            }) },
         showDialog = {coreManager.dialogManagerEvent(DialogManager.Show {
             { ApplyCoreManagerTheme{Button(onClick = { coreManager.dialogManagerEvent(DialogManager.Hide) }) { Text(text = "Hide Dialog") }} }
         })},
