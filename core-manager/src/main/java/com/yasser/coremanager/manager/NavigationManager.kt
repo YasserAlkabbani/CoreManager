@@ -3,22 +3,30 @@ package com.yasser.coremanager.manager
 import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.collectAsState
 import androidx.navigation.*
 import androidx.navigation.compose.composable
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 
 data class NavigationManager(
     val destinationsManagerList:List<DestinationManager>,
     val bottomNavigationDestinationList:List<DestinationManager>,
     val startDestination:DestinationManager,
 ) {
-    private val _navHostController:MutableStateFlow<NavHostController?> = MutableStateFlow(null)
-    val navHostController:StateFlow<NavHostController?> = _navHostController
-    fun setNavHostController(newNavHostController: NavHostController?){_navHostController.update { newNavHostController }}
+    private var currentActivity:String?=null
+
+    private val navHostController:MutableStateFlow<NavHostController?> = MutableStateFlow(null)
+    fun returnNavHostControllerForCurrentActivity(activity:String):Flow<NavHostController?> =
+        navHostController.map { if (activity==currentActivity) it else null }
+
+    fun setNavHostController(newNavHostController: NavHostController?,newCurrentActivity:String?){
+        if (newNavHostController!=null){
+            currentActivity=newCurrentActivity
+            navHostController.update { newNavHostController }
+        }else if (currentActivity==newCurrentActivity){
+            navHostController.update { newNavHostController }
+        }
+    }
 
     private val _currentDestination: MutableStateFlow<DestinationManager> by lazy { MutableStateFlow(startDestination) }
     val currentDestination: StateFlow<DestinationManager> = _currentDestination

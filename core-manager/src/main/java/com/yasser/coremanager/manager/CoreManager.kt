@@ -16,7 +16,9 @@ class CoreManager @Inject constructor(val navigationManager: NavigationManager){
 
     lateinit var getCurrentActivity:()->CoreActivity?
     private set
-    internal fun setGetCurrentActivity(newGetCurrentActivity:()->CoreActivity?){getCurrentActivity=newGetCurrentActivity}
+    internal fun setGetCurrentActivity(selectedActivity:String,newGetCurrentActivity:()->CoreActivity?){
+        if (selectedActivity==currentActivity)getCurrentActivity=newGetCurrentActivity
+    }
 
     var composeManagerEvent:(ComposeManager)->Unit ={}
     private set

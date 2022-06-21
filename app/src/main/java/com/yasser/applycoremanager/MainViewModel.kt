@@ -26,13 +26,6 @@ class MainViewModel @Inject constructor(
 
 
 
-    init {
-        viewModelScope.launch {
-            coreManager.navigationManager.currentDestination.collect{
-                Log.d("CoreManager","CurrentDetonation ViewModel ${it.route}")
-            }
-        }
-    }
     private val _mainUIState:MutableStateFlow<MainUIState> = MutableStateFlow(MainUIState(navigationManager = coreManager.navigationManager))
     val mainUIState:StateFlow<MainUIState> =_mainUIState
 

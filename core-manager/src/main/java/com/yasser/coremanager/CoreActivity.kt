@@ -41,13 +41,10 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.yasser.coremanager.manager.*
 import com.yasser.coremanager.manager.ComposeManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNot
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
 
@@ -95,24 +92,29 @@ open class CoreActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
+        Log.d("CoreManager", "VIEW_MODEL: CORE_ACTIVITY ON_DESTROY")
+
         coreManager.setComposeManagerEvent(this.toString()){}
         coreManager.setStartActivityEvent(this.toString()){}
-        coreManager.setGetCurrentActivity { null }
+        coreManager.setGetCurrentActivity (this.toString()){ null }
         coreManager.setPermissionManagerEvent(this.toString()){}
         coreManager.setActivityForResultManagerEvent(this.toString()){}
         coreManager.setDateTimePickerEvent(this.toString()){}
         coreManager.setStringFromRes(this.toString()){""}
         coreManager.setDialogManager(this.toString()){}
-        coreManager.navigationManager.setNavHostController(null)
+        coreManager.navigationManager.setNavHostController(null,this.toString())
+
+
 
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        Log.d("CoreManager", "VIEW_MODEL: CORE_ACTIVITY ON_CREATE")
 
         coreManager.setCurrentActivity(this.toString())
         coreManager.setComposeManagerEvent(this.toString()) { coreViewModel.setComposeManager(it) }
-        coreManager.setGetCurrentActivity { this }
+        coreManager.setGetCurrentActivity (this.toString()){ this }
         coreManager.setPermissionManagerEvent(this.toString()) {
             when(it){
                 is PermissionManager.Camera -> checkPermission(
@@ -349,7 +351,9 @@ open class CoreActivity : AppCompatActivity() {
 
             val coreViewModel:CoreViewModel = viewModel()
             val navHostController= rememberNavController()
-            LaunchedEffect(key1 = navHostController, block = { coreViewModel.setNavHostController(navHostController) })
+            LaunchedEffect(key1 = navHostController, block = {
+                coreManager.navigationManager.setNavHostController(navHostController,this@CoreActivity.toString())
+            })
 
             val context= LocalContext.current
             val localSoftwareKeyboardController= LocalSoftwareKeyboardController.current
@@ -358,22 +362,26 @@ open class CoreActivity : AppCompatActivity() {
             val hideDialog:()->Unit =coreViewModel::setHideDialog
 
 
-            val currentDestinationState=coreManager.navigationManager.navHostController.collectAsState().value?.currentBackStackEntryAsState()?.value
+            val currentDestinationState=
+                coreManager.navigationManager.returnNavHostControllerForCurrentActivity(this@CoreActivity.toString())
+                    .collectAsState(null).value?.currentBackStackEntryAsState()?.value
 
-            LaunchedEffect(key1 = currentDestinationState, block ={
-                withContext(Dispatchers.Default){
-                    coreManager.navigationManager.destinationsManagerList.firstOrNull { destination->
-                        val currentRoute=if (currentDestinationState?.destination?.route?.contains("/") == true)
-                            currentDestinationState.destination.route?.substringBefore("/") else currentDestinationState?.destination?.route
-                        destination.route==currentRoute
-                    }?.let {
-                        currentDestinationState?.arguments?.getString(it.arg2Key)?.removePrefix("{")?.removeSuffix("}").let {label->
-                            coreManager.navigationManager.setCurrentDestination(it.copy(label=(label?.asTextManager()?:it.label)))
+            currentDestinationState?.let {
+                LaunchedEffect(key1 = currentDestinationState, block ={
+                    withContext(Dispatchers.Default){
+                        coreManager.navigationManager.destinationsManagerList.firstOrNull { destination->
+                            val currentRoute=if (currentDestinationState.destination.route?.contains("/") == true)
+                                currentDestinationState.destination.route?.substringBefore("/") else currentDestinationState.destination.route
+                            destination.route==currentRoute
+                        }?.let {
+                            currentDestinationState.arguments?.getString(it.arg2Key)?.removePrefix("{")?.removeSuffix("}").let {label->
+                                coreManager.navigationManager.setCurrentDestination(it.copy(label=(label?.asTextManager()?:it.label)))
+                                }
+                            }
                         }
                     }
-                }
-            } )
-
+                )
+            }
 
             val modalBottomSheetState:ModalBottomSheetState= rememberModalBottomSheetState(
                 initialValue = ModalBottomSheetValue.Hidden,
