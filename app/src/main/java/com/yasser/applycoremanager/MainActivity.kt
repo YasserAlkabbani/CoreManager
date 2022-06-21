@@ -16,6 +16,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.NavHost
 import com.yasser.applycoremanager.ui.theme.ApplyCoreManagerTheme
@@ -31,7 +32,7 @@ import javax.inject.Singleton
 @AndroidEntryPoint
 class MainActivity : CoreActivity() {
 
-    val mainViewModel:MainViewModel by viewModels()
+    private val mainViewModel:MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,21 +44,21 @@ class MainActivity : CoreActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    val navHostController=mainViewModel.coreManager.navigationManager.navHostController.collectAsState().value
-                    navHostController?.let {
-                        NavHost(
-                            navController =navHostController,
-                            startDestination = mainViewModel.coreManager.navigationManager.startDestination.route ){
-                            mainViewModel.coreManager.navigationManager.getNavHostComposableContent(this)
-                        }
+                    mainViewModel.coreManager.navigationManager.returnNavHostControllerForCurrentActivity(this@MainActivity.toString())
+                        .collectAsState(null).value?.let {navHostController->
+                            NavHost(
+                                navController =navHostController,
+                                startDestination = mainViewModel.coreManager.navigationManager.startDestination.route ){
+                                mainViewModel.coreManager.navigationManager.getNavHostComposableContent(this)
+                            }
                     }
                 }
             }
         }
+
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MainCompose(){
 
@@ -71,10 +72,6 @@ fun MainCompose(){
     val mainUIEvent=mainViewModel.mainUIEvent
     val mainUIState=mainViewModel.mainUIState.collectAsState().value
     val currentDestination=mainUIState.navigationManager.currentDestination.collectAsState().value
-
-    LaunchedEffect(currentDestination){
-            Log.d("CoreManager","CurrentDetonation MainActivity ${currentDestination.route}")
-    }
 
     LazyColumn(
         content = {

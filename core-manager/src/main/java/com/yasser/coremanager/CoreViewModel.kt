@@ -26,8 +26,4 @@ class CoreViewModel @Inject constructor(
     internal fun setDialogManager(newDialogManager: DialogManager){ _dialogManager.update { newDialogManager } }
     internal fun setHideDialog(){_dialogManager.update {DialogManager.Hide}}
 
-    fun setNavHostController(newNavHostController: NavHostController){
-        coreManager.navigationManager.setNavHostController(newNavHostController)
-    }
-
 }
