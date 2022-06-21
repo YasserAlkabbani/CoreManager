@@ -40,10 +40,7 @@ data class NavigationManager(
         val arg1=if (!destinationManager.arg1Key.isNullOrBlank())"/${arg1Value}" else ""
         val arg2=if (!destinationManager.arg2Key.isNullOrBlank())"/${arg2Value}" else ""
         val fullRoute=route+arg1+arg2
-        navHostController.value?.navigate(fullRoute){
-            val navOptionsBuilder=currentDestination.value.navOptionBuilder(destinationManager)
-            navOptionsBuilder()
-        }
+        navHostController.value?.navigate(fullRoute){ destinationManager.navOptionBuilder()() }
     }
     fun getNavHostComposableContent(navGraphBuilder: NavGraphBuilder)=
         destinationsManagerList.map { it.getNavHostComposableContent(navGraphBuilder) }
@@ -52,7 +49,7 @@ data class DestinationManager(
     val label: TextManager, val route: String, @DrawableRes val icon: Int?,
     val arg1Key:String?, val arg2Key:String?,
     val haveTopBar: Boolean, val haveBackButton:Boolean, val haveBottomNavigation: Boolean, val haveFloatingActionButton: Boolean,
-    val navOptionBuilder:(DestinationManager) -> NavOptionsBuilder.()->Unit,
+    val navOptionBuilder:() -> NavOptionsBuilder.()->Unit,
     private val composeManagerContent: ()-> @Composable ()->Unit,
 ){
     private fun getRouteWithKey(): String {

@@ -374,8 +374,9 @@ open class CoreActivity : AppCompatActivity() {
                                 currentDestinationState.destination.route?.substringBefore("/") else currentDestinationState.destination.route
                             destination.route==currentRoute
                         }?.let {
-                            currentDestinationState.arguments?.getString(it.arg2Key)?.removePrefix("{")?.removeSuffix("}").let {label->
-                                coreManager.navigationManager.setCurrentDestination(it.copy(label=(label?.asTextManager()?:it.label)))
+                            Log.d("CoreManager","CURRENT_DESTINATION ${it.route}")
+                                    currentDestinationState.arguments?.getString(it.arg2Key)?.removePrefix("{")?.removeSuffix("}").let {label->
+                                    coreManager.navigationManager.setCurrentDestination(it.copy(label=(label?.asTextManager()?:it.label)))
                                 }
                             }
                         }

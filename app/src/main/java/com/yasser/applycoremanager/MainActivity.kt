@@ -89,8 +89,8 @@ fun MainCompose(){
             item { Button(onClick = {mainUIEvent.showToast("Test String Toast".asTextManager())}) { Text(text = "Show String Toast") }}
             item { Button(onClick = {mainUIEvent.showToast(R.string.test_toast_resource.asTextManager())}) { Text(text = "Show Resource Toast") }}
 
-            item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting1,"12345","56698")}) { Text(text = "Navigate To Greeting 1") }}
-            item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting2,"54321","98745")}) { Text(text = "Navigate To Greeting 2") }}
+            item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting1,null,null)}) { Text(text = "Navigate To Greeting 1") }}
+            item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting2,null,null)}) { Text(text = "Navigate To Greeting 2") }}
             item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting3,"67890","67890")}) { Text(text = "Navigate To Greeting 3") }}
             item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting4,"12345","12345")}) { Text(text = "Navigate To Greeting 4") }}
             item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting5,null,null)}) { Text(text = "Navigate To Greeting 5") }}
@@ -134,40 +134,52 @@ fun MainCompose(){
 
 @Composable
 fun Greeting1(name: String) {
+    val mainViewModel:MainViewModel= hiltViewModel()
     Box(Modifier.fillMaxSize()) {
-        Text(
+        Button(
             modifier = Modifier.align(Alignment.Center),
-            text = "Hello 1 $name!",fontSize = 30.sp
-        )
+            onClick = {mainViewModel.mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting2,null,null)}
+        ){
+            Text(text = "Hello 1 $name!",fontSize = 30.sp)
+        }
     }
 }
 
 @Composable
 fun Greeting2(name: String) {
+    val mainViewModel:MainViewModel= hiltViewModel()
     Box(Modifier.fillMaxSize()) {
-        Text(
+        Button(
             modifier = Modifier.align(Alignment.Center),
-            text = "Hello 2 $name!",fontSize = 30.sp
-        )
+            onClick = {mainViewModel.mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting3,"12345","56698")}
+        ){
+            Text(text = "Hello 2 $name!",fontSize = 30.sp)
+        }
     }
 }
 
 @Composable
 fun Greeting3(name: String) {
+    val mainViewModel:MainViewModel= hiltViewModel()
     Box(Modifier.fillMaxSize()) {
-        Text(
+        Button(
             modifier = Modifier.align(Alignment.Center),
-            text = "Hello 3 $name!",fontSize = 30.sp
-        )
+            onClick = {mainViewModel.mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting4,"12345","56698")}
+        ){
+            Text(text = "Hello 3 $name!",fontSize = 30.sp)
+        }
     }
 }
 @Composable
 fun Greeting4(name: String) {
+    val mainViewModel:MainViewModel= hiltViewModel()
     Box(Modifier.fillMaxSize()) {
-        Text(
+        Button(
             modifier = Modifier.align(Alignment.Center),
-            text = "Hello 4 $name!",fontSize = 30.sp
-        )
+            onClick = {mainViewModel.mainUIEvent.popUp()}
+        ){
+            Text(text = "Hello 4 $name!",fontSize = 30.sp)
+        }
     }
 }
 
@@ -191,39 +203,49 @@ data class ApplyCoreDestinationsManager(
         }, { { MainCompose() } }
     ),
     val greeting1:DestinationManager=DestinationManager(
-        "Greeting1".asTextManager(),"greeting_1",R.drawable.icon_android,"G_1_1","G_1_2",
+        "Greeting1".asTextManager(),"greeting_1",R.drawable.icon_android,null,null,
         true,true,true,true, {
-            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={}
+            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={
+                popUpTo("main_compose"){inclusive=true}
+            }
             navOptionsBuilderExt
         }, { { Greeting1("Greeting1") } }
     ),
     val greeting2:DestinationManager=DestinationManager(
-        "Greeting2".asTextManager(),"greeting_2",R.drawable.icon_android,"G_2_1","G_2_2",
+        "Greeting2".asTextManager(),"greeting_2",R.drawable.icon_android,null,null,
         true,true,true,true, {
-           val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={}
+           val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={
+               popUpTo("greeting_1"){inclusive=true}
+           }
             navOptionsBuilderExt
         }, { { Greeting2("Greeting2") } }
     ),
     val greeting3:DestinationManager=DestinationManager(
-        "Greeting3".asTextManager(),"greeting_3",R.drawable.icon_android,"G_3_1",null,
+        "Greeting3".asTextManager(),"greeting_3",R.drawable.icon_android,"G_3_1","G_3_2",
         true,true,true,true, {
-            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={}
+            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={
+                popUpTo("greeting_2"){inclusive=false}
+            }
             navOptionsBuilderExt
         }, { { Greeting3("Greeting3") } }
     ),
     val greeting4:DestinationManager=DestinationManager(
         "Greeting4".asTextManager(),"greeting_4",R.drawable.icon_android,null,"G_4_2",
         true,true,true,true, {
-            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={}
+            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={
+                popUpTo("greeting_3"){inclusive=true}
+            }
             navOptionsBuilderExt
-        }, { { Greeting3("Greeting4") } }
+        }, { { Greeting4("Greeting4") } }
     ),
     val greeting5:DestinationManager=DestinationManager(
         "Greeting5".asTextManager(),"greeting_5",R.drawable.icon_android,null,null,
         true,true,true,true, {
-            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={}
+            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={
+                popUpTo("greeting_4"){inclusive=true}
+            }
             navOptionsBuilderExt
-        }, { { Greeting3("Greeting5") } }
+        }, { { Greeting4("Greeting5") } }
     )
 ){
     fun getStartDestination()=mainCompose
