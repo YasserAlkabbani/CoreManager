@@ -213,11 +213,19 @@ open class CoreActivity : AppCompatActivity() {
                     }
 
                     val pickFileIntent:Intent= Intent().apply {
-                        val typeList= arrayOf(
-                            "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                            "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                            "application/pdf", "image/*","audio/*"
-                        )
+                        val typeList= buildList {
+                            Log.d("CoreManager","${activityForResultManager.image} ${activityForResultManager.audio} ${activityForResultManager.video} ${activityForResultManager.pdf} ${activityForResultManager.excel} ${activityForResultManager.word}")
+                            if (activityForResultManager.image){add("image/*")}
+                            if (activityForResultManager.audio){add("audio/*")}
+                            if (activityForResultManager.video){add("video/*")}
+                            if (activityForResultManager.pdf){add("application/pdf")}
+                            if (activityForResultManager.excel){
+                                add(listOf("application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                            }
+                            if (activityForResultManager.word){
+                                addAll(listOf("application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+                            }
+                        }.toTypedArray()
                         action=Intent.ACTION_OPEN_DOCUMENT
                         type = "*/*"
                         putExtra(Intent.EXTRA_MIME_TYPES,typeList)
@@ -271,8 +279,7 @@ open class CoreActivity : AppCompatActivity() {
                 is StartActivityManager.GoToSendEmail -> {
                     val intent = Intent().apply {
                         action=Intent.ACTION_VIEW
-                        type = "*/*"
-                        data=Uri.parse("mailto:"+it.emailAddress+"?subject="+ it.subject +"&body="+ it.body)
+                        setDataAndType(Uri.parse("mailto:"+it.emailAddress+"?subject="+ it.subject +"&body="+ it.body),"*/*")
                     }
                     startActivity(intent)
                 }
@@ -296,8 +303,7 @@ open class CoreActivity : AppCompatActivity() {
                     val fileUri=FileProvider.getUriForFile(this,"${it.packageName}.fileprovider",it.file)
                     val intent = Intent().apply {
                         action=Intent.ACTION_VIEW
-                        type=fileMime
-                        data=fileUri
+                        setDataAndType(fileUri,fileMime)
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         clipData = ClipData.newRawUri("Open File", fileUri)
                     }
@@ -374,7 +380,6 @@ open class CoreActivity : AppCompatActivity() {
                                 currentDestinationState.destination.route?.substringBefore("/") else currentDestinationState.destination.route
                             destination.route==currentRoute
                         }?.let {
-                            Log.d("CoreManager","CURRENT_DESTINATION ${it.route}")
                                     currentDestinationState.arguments?.getString(it.arg2Key)?.removePrefix("{")?.removeSuffix("}").let {label->
                                     coreManager.navigationManager.setCurrentDestination(it.copy(label=(label?.asTextManager()?:it.label)))
                                 }

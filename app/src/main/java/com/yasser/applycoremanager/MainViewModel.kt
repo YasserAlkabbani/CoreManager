@@ -276,7 +276,8 @@ class MainViewModel @Inject constructor(
             { ApplyCoreManagerTheme{Button(onClick = { coreManager.dialogManagerEvent(DialogManager.Hide) }) { Text(text = "Hide Dialog") }} }
         })},
         hideDialog = {coreManager.dialogManagerEvent(DialogManager.Hide)},
-        pickFile = {coreManager.activityForResultManagerEvent(ActivityForResultManager.PickFile {
+        pickFile = {coreManager.activityForResultManagerEvent(
+            ActivityForResultManager.PickFile(true,true,true,true,true,true) {
             Log.d("CoreManager","PickFile ${it()})")
         })}
     )
