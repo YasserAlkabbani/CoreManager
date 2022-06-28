@@ -20,11 +20,13 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -423,6 +425,7 @@ open class CoreActivity : AppCompatActivity() {
             }
 
             ModalBottomSheetLayout(
+                modifier = Modifier.navigationBarsPadding(),
                 sheetState =modalBottomSheetState ,
                 sheetContent = { dialogManager.dialogManagerContent()() },
                 sheetBackgroundColor = Color.Transparent,

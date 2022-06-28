@@ -6,17 +6,18 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.NavHost
 import com.yasser.applycoremanager.ui.theme.ApplyCoreManagerTheme
@@ -37,22 +38,57 @@ class MainActivity : CoreActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         coreManagerContent{
             ApplyCoreManagerTheme{
                 // A surface container using the 'background' color from the theme
-                Surface(
+                Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    mainViewModel.coreManager.navigationManager.returnNavHostControllerForCurrentActivity(this@MainActivity.toString())
-                        .collectAsState(null).value?.let {navHostController->
-                            NavHost(
-                                navController =navHostController,
-                                startDestination = mainViewModel.coreManager.navigationManager.startDestination.route ){
-                                mainViewModel.coreManager.navigationManager.getNavHostComposableContent(this)
+                    topBar = {
+                        TopAppBar(
+                            modifier = Modifier.systemBarsPadding(),
+                            content = { Text(text = "TOOL_BAR")}
+                        )},
+                    content = {
+                        it.calculateBottomPadding()
+                        it.calculateTopPadding()
+//
+                        Surface(
+                            modifier = Modifier.imePadding(),
+                            color = MaterialTheme.colors.background
+                        ) {
+                            mainViewModel.coreManager.navigationManager.returnNavHostControllerForCurrentActivity(this@MainActivity.toString())
+                                .collectAsState(null).value?.let {navHostController->
+                                    NavHost(
+                                        navController =navHostController,
+                                        startDestination = mainViewModel.coreManager.navigationManager.startDestination.route ){
+                                        mainViewModel.coreManager.navigationManager.getNavHostComposableContent(this)
+                                    }
+                                }
+                        }
+                    },
+                    /*bottomBar = {
+                        BottomNavigation(
+                            modifier = Modifier,
+                            content = {
+                                BottomNavigationItem(
+                                    selected = true, onClick = { },
+                                    icon = { Icon(imageVector = Icons.Default.Create, contentDescription =null ) }
+                                )
+                                BottomNavigationItem(
+                                    selected = true, onClick = { },
+                                    icon = { Icon(imageVector = Icons.Default.Create, contentDescription =null ) }
+                                )
+                                BottomNavigationItem(
+                                    selected = true, onClick = { },
+                                    icon = { Icon(imageVector = Icons.Default.Create, contentDescription =null ) }
+                                )
                             }
-                    }
-                }
+                        )
+                    }*/
+                )
+
             }
         }
 
@@ -129,7 +165,9 @@ fun MainCompose(){
             item { Button(onClick = {mainUIEvent.imageCaptureAndShare()}) { Text(text = "Image Capture And Share") }}
             item { Button(onClick = {mainUIEvent.imageCaptureAndOpen()}) { Text(text = "Image Capture And Open") }}
 
-    })
+        }
+    )
+
 }
 
 @Composable
@@ -180,6 +218,31 @@ fun Greeting4(name: String) {
         ){
             Text(text = "Hello 4 $name!",fontSize = 30.sp)
         }
+    }
+}
+@Composable
+fun Greeting5() {
+    val mainViewModel:MainViewModel= hiltViewModel()
+    val text= remember { mutableStateOf("")}
+    Column(modifier = Modifier.fillMaxSize()) {
+        val listItem= buildList {
+            repeat(500){ add("ITEM_ $it _ $it _ $it") }
+        }
+        val bottomPadding=with(LocalDensity.current) { WindowInsets.ime.getBottom(LocalDensity.current).toDp() }
+        val lazyColumnState= rememberLazyListState()
+
+        LazyColumn(
+            state =lazyColumnState ,
+            reverseLayout = true,
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(1f),
+            content ={ items(listItem){it-> Text(text = it) } }
+        )
+        TextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = text.value, onValueChange = {text.value=it}
+        )
     }
 }
 
@@ -245,7 +308,7 @@ data class ApplyCoreDestinationsManager(
                 popUpTo("greeting_4"){inclusive=true}
             }
             navOptionsBuilderExt
-        }, { { Greeting4("Greeting5") } }
+        }, { { Greeting5()} }
     )
 ){
     fun getStartDestination()=mainCompose
