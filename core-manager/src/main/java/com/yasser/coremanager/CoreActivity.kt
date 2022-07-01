@@ -312,6 +312,21 @@ open class CoreActivity : AppCompatActivity() {
                     startActivity(Intent.createChooser(intent,"Open By"))
 //                    chooserIntent.resolveActivity(packageManager)?.let{startActivity(chooserIntent)}
                 }
+                is StartActivityManager.OpenWebUrl -> {
+                    val webIntent=it.webUrl.let {
+                        val webUrl=if (it.startsWith("https://"))it else "https://$it"
+                        Intent(Intent.ACTION_VIEW, Uri.parse(webUrl))
+                    }
+                    startActivity(Intent.createChooser(webIntent,"Open By"))
+                }
+                is StartActivityManager.ShareText -> {
+                    val sendIntent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, it.text)
+                        type = "text/plain"
+                    }
+                    startActivity(Intent.createChooser(sendIntent,"Share By"))
+                }
             }
         }
         coreManager.setDateTimePickerEvent(this.toString()){dateTimeManager->
