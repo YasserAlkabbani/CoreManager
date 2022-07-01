@@ -8,6 +8,8 @@ sealed class ComposeManager {
     object HideKeyBoard: ComposeManager()
     object NextFocus: ComposeManager()
     object DownFocus: ComposeManager()
+    object Popup:ComposeManager()
     class ShowToast(val textManager: TextManager):ComposeManager()
+    class Navigation(val destinationManager: DestinationManager,val arg1Value:String?=null,val arg2Value:String?=null):ComposeManager()
 }
 

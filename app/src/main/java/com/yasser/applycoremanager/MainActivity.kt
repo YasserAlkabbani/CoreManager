@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -253,7 +252,7 @@ object NavigationModule {
     fun provideNavigationManager():NavigationManager= NavigationManager(
         destinationsManagerList =ApplyCoreDestinationsManager().getAllDestination() ,
         startDestination =ApplyCoreDestinationsManager().getStartDestination() ,
-        bottomNavigationDestinationList = ApplyCoreDestinationsManager().getBottomNavigationDestanition() ,
+        bottomNavigationDestinationList = ApplyCoreDestinationsManager().getBottomNavigationDestination() ,
     )
 }
 
@@ -314,17 +313,5 @@ data class ApplyCoreDestinationsManager(
     fun getStartDestination()=mainCompose
     fun getAllDestination()= listOf(mainCompose,greeting1,greeting2,greeting3,greeting4,greeting5)
     fun getHomeDestanition()= listOf(greeting1 ,greeting2, greeting3)
-    fun getBottomNavigationDestanition()= listOf(greeting4 ,greeting5)
+    fun getBottomNavigationDestination()= listOf(greeting4 ,greeting5)
 }
-
-//enum class NavigationManager(){
-//    MainCompose, Greeting1, Greeting2, Greeting3
-//}
-
-//@Preview(showBackground = true)
-//@Composable
-//fun DefaultPreview() {
-//    ApplyCoreManagerTheme {
-//        Greeting("Android")
-//    }
-//}
