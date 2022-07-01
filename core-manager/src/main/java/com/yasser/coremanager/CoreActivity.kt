@@ -44,9 +44,9 @@ import com.google.android.material.timepicker.TimeFormat
 import com.yasser.coremanager.manager.*
 import com.yasser.coremanager.manager.ComposeManager
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.onEach
 import java.io.File
 import javax.inject.Inject
 
@@ -402,16 +402,28 @@ open class CoreActivity : AppCompatActivity() {
 
             LaunchedEffect(coreViewModel){
                 launch {
-                    coreViewModel.composeManager.filterNot { it is ComposeManager.Idle }.collect {
+                    coreViewModel.composeManager
+                    .filterNot { it is ComposeManager.Idle }
+                    .onEach { coreViewModel.setComposeManager(ComposeManager.Idle) }.collect {
                         when(it){
                             ComposeManager.Idle -> {}
                             ComposeManager.HideKeyBoard -> localSoftwareKeyboardController?.hide()
                             ComposeManager.NextFocus -> localFocusManager.moveFocus(FocusDirection.Next)
                             ComposeManager.DownFocus -> localFocusManager.moveFocus(FocusDirection.Down)
+                            ComposeManager.Popup -> navHostController.popBackStack()
                             is ComposeManager.ShowToast -> Toast.makeText(context,it.textManager.getText(context), Toast.LENGTH_SHORT).show()
+                            is ComposeManager.Navigation -> {
+                                val route= it.destinationManager.route
+                                val arg1=if (!it.destinationManager.arg1Key.isNullOrBlank())"/${it.arg1Value}" else ""
+                                val arg2=if (!it.destinationManager.arg2Key.isNullOrBlank())"/${it.arg2Value}" else ""
+                                val fullRoute=route+arg1+arg2
+                                navHostController.navigate(fullRoute){
+                                    val navOptionsBuilder=
+                                        it.destinationManager.navOptionBuilder(coreManager.navigationManager.currentDestination.value)
+                                    navOptionsBuilder()
+                                }
+                            }
                         }
-                        delay(200)
-                        coreViewModel.setComposeManager(ComposeManager.Idle)
                     }
                 }
                 launch {

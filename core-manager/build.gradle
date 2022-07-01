@@ -55,11 +55,11 @@ dependencies {
     implementation 'androidx.activity:activity-compose:1.5.0-rc01'
     implementation "androidx.navigation:navigation-compose:2.4.2"
 
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.4.1'
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.4.1"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.4.1"
-    implementation "androidx.lifecycle:lifecycle-common-java8:2.4.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.2'
 
@@ -74,7 +74,7 @@ afterEvaluate {
                 from components.release
                 groupId 'com.yasser.coremanager'
                 artifactId "core-manager"
-                version "0.4.5-alpha"
+                version "0.4.6-alpha"
             }
         }
     }

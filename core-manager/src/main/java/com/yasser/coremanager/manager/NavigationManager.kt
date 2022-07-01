@@ -1,9 +1,7 @@
 package com.yasser.coremanager.manager
 
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.navigation.*
 import androidx.navigation.compose.composable
 import kotlinx.coroutines.flow.*
@@ -32,19 +30,6 @@ data class NavigationManager(
     val currentDestination: StateFlow<DestinationManager> = _currentDestination
     fun setCurrentDestination(destinationManager:DestinationManager){ _currentDestination.value=destinationManager }
 
-    fun popup(){navHostController.value?.popBackStack()}
-    fun navigate(
-        destinationManager: DestinationManager,arg1Value:String?,arg2Value:String?
-    ){
-        val route= destinationManager.route
-        val arg1=if (!destinationManager.arg1Key.isNullOrBlank())"/${arg1Value}" else ""
-        val arg2=if (!destinationManager.arg2Key.isNullOrBlank())"/${arg2Value}" else ""
-        val fullRoute=route+arg1+arg2
-        navHostController.value?.navigate(fullRoute){
-            val navOptionsBuilder=destinationManager.navOptionBuilder(currentDestination.value)
-            navOptionsBuilder()
-        }
-    }
     fun getNavHostComposableContent(navGraphBuilder: NavGraphBuilder)=
         destinationsManagerList.map { it.getNavHostComposableContent(navGraphBuilder) }
 }

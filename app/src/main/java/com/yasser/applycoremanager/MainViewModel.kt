@@ -21,23 +21,19 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-        val coreManager:CoreManager
-    ):ViewModel() {
-
-
+    val coreManager:CoreManager):ViewModel() {
 
     private val _mainUIState:MutableStateFlow<MainUIState> = MutableStateFlow(MainUIState(navigationManager = coreManager.navigationManager))
     val mainUIState:StateFlow<MainUIState> =_mainUIState
 
     val mainUIEvent=MainUIEvent(
-        popUp = {coreManager.navigationManager.popup()},
+        popUp = {coreManager.composeManagerEvent(ComposeManager.Popup)},
         hideKeyBoard = {coreManager.composeManagerEvent(ComposeManager.HideKeyBoard)},
         nextFocus = {coreManager.composeManagerEvent(ComposeManager.NextFocus)},
         downFocus = {coreManager.composeManagerEvent(ComposeManager.DownFocus)},
         showToast = { coreManager.composeManagerEvent(ComposeManager.ShowToast(it))},
-        navigateTo = {
-                destinationManager,arg1,arg2 ->
-            coreManager.navigationManager.navigate(destinationManager,arg1,arg2)
+        navigateTo = {destinationManager,arg1,arg2 ->
+            coreManager.composeManagerEvent(ComposeManager.Navigation(destinationManager,arg1,arg2))
         },
         requestCameraPermission = {
             coreManager.permissionManagerEvent(
