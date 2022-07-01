@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        compose_version = '1.2.0-rc03'
+        compose_version = "1.2.0-rc02"
         lifecycle_version = "2.5.0"
     }
     dependencies {
