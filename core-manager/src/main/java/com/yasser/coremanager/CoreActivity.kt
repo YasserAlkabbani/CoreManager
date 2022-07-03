@@ -280,8 +280,8 @@ open class CoreActivity : AppCompatActivity() {
                 }
                 is StartActivityManager.GoToSendEmail -> {
                     val intent = Intent().apply {
-                        action=Intent.ACTION_VIEW
-                        setDataAndType(Uri.parse("mailto:"+it.emailAddress+"?subject="+ it.subject +"&body="+ it.body),"*/*")
+                        action=Intent.ACTION_SENDTO
+                        data=Uri.parse("mailto:"+it.emailAddress+"?subject="+ it.subject +"&body="+ it.body)
                     }
                     startActivity(intent)
                 }
