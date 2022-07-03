@@ -33,9 +33,9 @@ fun ApplyCoreManagerTheme(
     content: @Composable () -> Unit
 ) {
     val colors = if (darkTheme) {
-        DarkColorPalette
+        darkColors()
     } else {
-        LightColorPalette
+        lightColors()
     }
 
     MaterialTheme(

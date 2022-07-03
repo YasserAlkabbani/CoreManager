@@ -39,6 +39,7 @@ class MainActivity : CoreActivity() {
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+
         coreManagerContent{
             ApplyCoreManagerTheme{
                 // A surface container using the 'background' color from the theme
