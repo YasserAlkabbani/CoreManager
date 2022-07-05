@@ -273,7 +273,7 @@ class MainViewModel @Inject constructor(
         })},
         hideDialog = {coreManager.dialogManagerEvent(DialogManager.Hide)},
         pickFile = {coreManager.activityForResultManagerEvent(
-            ActivityForResultManager.PickFile(true,true,true,true,true,true) {
+            ActivityForResultManager.PickFile(true,false,false,true,true,true) {
             Log.d("CoreManager","PickFile ${it()})")
         })}
     )
