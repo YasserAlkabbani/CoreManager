@@ -216,18 +216,18 @@ open class CoreActivity : AppCompatActivity() {
 
                     val pickFileIntent:Intent= Intent().apply {
                         val typeList= buildList {
-                            Log.d("CoreManager","${activityForResultManager.image} ${activityForResultManager.audio} ${activityForResultManager.video} ${activityForResultManager.pdf} ${activityForResultManager.excel} ${activityForResultManager.word}")
                             if (activityForResultManager.image){add("image/*")}
                             if (activityForResultManager.audio){add("audio/*")}
                             if (activityForResultManager.video){add("video/*")}
                             if (activityForResultManager.pdf){add("application/pdf")}
                             if (activityForResultManager.excel){
-                                add(listOf("application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                                addAll(listOf("application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                             }
                             if (activityForResultManager.word){
                                 addAll(listOf("application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
                             }
                         }.toTypedArray()
+                        Log.d("CoreManager","CORE_ACTIVITY ${activityForResultManager.image} ${activityForResultManager.audio} ${activityForResultManager.video} ${activityForResultManager.pdf} ${activityForResultManager.excel} ${activityForResultManager.word} ${typeList.toList()}")
                         action=Intent.ACTION_OPEN_DOCUMENT
                         type = "*/*"
                         putExtra(Intent.EXTRA_MIME_TYPES,typeList)
