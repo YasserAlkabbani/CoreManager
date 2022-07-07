@@ -287,15 +287,22 @@ open class CoreActivity : AppCompatActivity() {
                 }
                 is StartActivityManager.CustomIntent -> startActivity(it.intent)
                 is StartActivityManager.ShareFile -> {
-                    val fileExt= MimeTypeMap.getFileExtensionFromUrl(it.file.path)
-                    val fileMime= MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt)
-                    val fileUri= FileProvider.getUriForFile(this, "${it.packageName}.fileprovider", it.file)
+
+                    val fileMimeList= it.files
+                        .mapNotNull { MimeTypeMap.getFileExtensionFromUrl(it.path) }
+                        .mapNotNull{ MimeTypeMap.getSingleton().getMimeTypeFromExtension(it) }
+                        .joinToString("|","","")
+
+                    val filesUri:ArrayList<Uri> = arrayListOf()
+                    it.files.forEach { file->
+                        filesUri.add(FileProvider.getUriForFile(this, "${it.packageName}.fileprovider", file))
+                    }
+
                     val intent:Intent =Intent().apply {
-                        action = Intent.ACTION_SEND
-                        putExtra(Intent.EXTRA_STREAM, fileUri)
-                        type=fileMime
+                        type=fileMimeList
+                        putParcelableArrayListExtra(Intent.EXTRA_STREAM, filesUri)
+                        action = Intent.ACTION_SEND_MULTIPLE
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)// or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-                        clipData = ClipData.newRawUri("Open File", fileUri)
                     }
                     startActivity(Intent.createChooser(intent, "Share By"))
                 }
