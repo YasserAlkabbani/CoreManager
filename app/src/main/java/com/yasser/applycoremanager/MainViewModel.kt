@@ -113,7 +113,7 @@ class MainViewModel @Inject constructor(
               taskToDoWhenPermissionDeclined = {},
               taskToDoWhenPermissionGranted = {
                   coreManager.activityForResultManagerEvent(ActivityForResultManager.CaptureImageByCamera(BuildConfig.APPLICATION_ID){
-                      coreManager.startActivityManagerEvent(StartActivityManager.ShareFile(it(),BuildConfig.APPLICATION_ID))
+                      coreManager.startActivityManagerEvent(StartActivityManager.ShareFile(listOf(it(),it()),BuildConfig.APPLICATION_ID))
                   })
               }
           ))
