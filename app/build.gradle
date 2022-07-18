@@ -77,6 +77,8 @@ dependencies {
     implementation "com.google.dagger:hilt-android:2.42"
     kapt "com.google.dagger:hilt-compiler:2.42"
 
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.9.1'
+
     implementation project(path: ':core-manager')
 
 }

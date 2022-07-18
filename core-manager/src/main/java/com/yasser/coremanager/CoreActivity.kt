@@ -289,8 +289,8 @@ open class CoreActivity : AppCompatActivity() {
                 is StartActivityManager.ShareFile -> {
 
                     val fileMimeList= it.files
-                        .mapNotNull { MimeTypeMap.getFileExtensionFromUrl(it.path) }
-                        .mapNotNull{ MimeTypeMap.getSingleton().getMimeTypeFromExtension(it) }
+                        .map {it.path.substringAfterLast(".")}
+                        .mapNotNull{MimeTypeMap.getSingleton().getMimeTypeFromExtension(it)}
                         .joinToString("|","","")
 
                     val filesUri:ArrayList<Uri> = arrayListOf()
@@ -298,16 +298,21 @@ open class CoreActivity : AppCompatActivity() {
                         filesUri.add(FileProvider.getUriForFile(this, "${it.packageName}.fileprovider", file))
                     }
 
+                    val clipData:ClipData= ClipData.newRawUri("Open File", filesUri.first()).apply {
+                        filesUri.forEach {addItem(ClipData.Item(it))}
+                    }
+
                     val intent:Intent =Intent().apply {
+                        action = Intent.ACTION_SEND_MULTIPLE
                         type=fileMimeList
                         putParcelableArrayListExtra(Intent.EXTRA_STREAM, filesUri)
-                        action = Intent.ACTION_SEND_MULTIPLE
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)// or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) //or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                        this.clipData = clipData
                     }
                     startActivity(Intent.createChooser(intent, "Share By"))
                 }
                 is StartActivityManager.OpenFile->{
-                    val fileExt= MimeTypeMap.getFileExtensionFromUrl(it.file.path)
+                    val fileExt= it.file.path.substringAfterLast(".")
                     val fileMime= MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt)
                     val fileUri=FileProvider.getUriForFile(this,"${it.packageName}.fileprovider",it.file)
                     val intent = Intent().apply {
