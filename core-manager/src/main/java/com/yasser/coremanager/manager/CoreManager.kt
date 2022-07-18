@@ -1,6 +1,5 @@
 package com.yasser.coremanager.manager
 
-import android.util.Log
 import com.yasser.coremanager.CoreActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -32,10 +31,10 @@ class CoreManager @Inject constructor(val navigationManager: NavigationManager){
         if (selectedActivity==currentActivity)permissionManagerEvent=newPermissionManagerEvent
     }
 
-    var activityForResultManagerEvent:(ActivityForResultManager)->Unit={}
+    var startActivityForResultManagerEvent:(StartActivityForResultManager)->Unit={}
     private set
-    internal fun setActivityForResultManagerEvent(selectedActivity:String,newActivityForResultManagerEvent:(ActivityForResultManager)->Unit) {
-        if (selectedActivity==currentActivity)activityForResultManagerEvent=newActivityForResultManagerEvent
+    internal fun setActivityForResultManagerEvent(selectedActivity:String,newActivityForResultManagerEvent:(StartActivityForResultManager)->Unit) {
+        if (selectedActivity==currentActivity)startActivityForResultManagerEvent=newActivityForResultManagerEvent
     }
 
     var startActivityManagerEvent:(StartActivityManager)->Unit={}
