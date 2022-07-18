@@ -2,20 +2,18 @@ package com.yasser.applycoremanager
 
 import android.content.Intent
 import android.util.Log
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Card
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.yasser.applycoremanager.ui.theme.ApplyCoreManagerTheme
 import com.yasser.coremanager.manager.*
 import com.yasser.coremanager.manager.ComposeManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,289 +21,282 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     val coreManager:CoreManager):ViewModel() {
 
-    private val _mainUIState:MutableStateFlow<MainUIState> = MutableStateFlow(MainUIState(navigationManager = coreManager.navigationManager))
-    val mainUIState:StateFlow<MainUIState> =_mainUIState
-
-    val mainUIEvent=MainUIEvent(
-        popUp = {coreManager.composeManagerEvent(ComposeManager.Popup)},
-        hideKeyBoard = {coreManager.composeManagerEvent(ComposeManager.HideKeyBoard)},
-        nextFocus = {coreManager.composeManagerEvent(ComposeManager.NextFocus)},
-        downFocus = {coreManager.composeManagerEvent(ComposeManager.DownFocus)},
-        showToast = { coreManager.composeManagerEvent(ComposeManager.ShowToast(it))},
-        navigateTo = {destinationManager,arg1,arg2 ->
-            coreManager.composeManagerEvent(ComposeManager.Navigation(destinationManager,arg1,arg2))
-        },
-        requestCameraPermission = {
-            coreManager.permissionManagerEvent(
-                PermissionManager.Camera(
-                    taskToDoWhenPermissionGranted = {},
-                    showRequestPermissionRationale = {},
-                    taskToDoWhenPermissionDeclined = {}
-                )
-            )
-        },
-        requestReadExternalStoragePermission = {
-            coreManager.permissionManagerEvent(
-                PermissionManager.ReadExternalStorage(
-                    taskToDoWhenPermissionGranted = {},
-                    showRequestPermissionRationale = {coreManager.startActivityManagerEvent(StartActivityManager.GoToSettings)},
-                    taskToDoWhenPermissionDeclined = {coreManager.composeManagerEvent(ComposeManager.ShowToast(TextManager.ResourceText(R.string.test_toast_resource)))}
-                )
-            )
-        },
-        requestCustomPermission = {
-            coreManager.permissionManagerEvent(
-                PermissionManager.CustomPermission(
-                    permission = it,
-                    taskToDoWhenPermissionGranted = {}, showRequestPermissionRationale = {}, taskToDoWhenPermissionDeclined = {}
-                )
-            )
-        },
-        requestLocationPermission = {
-            coreManager.permissionManagerEvent(
-                PermissionManager.LocationPermission(
-                    taskToDoWhenPermissionGranted = {}, showRequestPermissionRationale = {}, taskToDoWhenPermissionDeclined = {}
-                )
-            )
-        },
-        requestRecordAudioPermission = {
-            coreManager.permissionManagerEvent(
-                PermissionManager.RecordAudio(
-                    taskToDoWhenPermissionGranted = {Log.d("TestPermission","taskToDoWhenPermissionGranted")},
-                    showRequestPermissionRationale = {coreManager.startActivityManagerEvent(StartActivityManager.GoToSettings)},
-                    taskToDoWhenPermissionDeclined = {Log.d("TestPermission","taskToDoWhenPermissionDeclined")}
-                )
-            )
-        },
-        requestCallPhonePermission = {
-            coreManager.permissionManagerEvent(PermissionManager.CallPhone(
-                taskToDoWhenPermissionGranted = { coreManager.startActivityManagerEvent(StartActivityManager.StartCallPhone("+963966994266"))},
-                showRequestPermissionRationale = { coreManager.startActivityManagerEvent(StartActivityManager.GoToSettings) },
-                taskToDoWhenPermissionDeclined = {coreManager.composeManagerEvent(ComposeManager.ShowToast(R.string.test_toast_resource.asTextManager()))}
-             )
-         )
-        },
-
-        goToSettings ={coreManager.startActivityManagerEvent(StartActivityManager.GoToSettings)},
-        restartApp = {coreManager.startActivityManagerEvent(StartActivityManager.RestartApp)},
-        getStringFromRes = {Log.d("TestCoreManager", coreManager.stringByRes(it))},
-        goToSendEmail = {address,subject,body->coreManager.startActivityManagerEvent(StartActivityManager.GoToSendEmail(address,subject,body))},
-        startCustomIntent = {coreManager.startActivityManagerEvent(StartActivityManager.CustomIntent(it))},
-
-        startPhoneCall = {phoneNumber->
-            coreManager.permissionManagerEvent(PermissionManager.CallPhone(
-                taskToDoWhenPermissionGranted = {coreManager.startActivityManagerEvent(StartActivityManager.StartCallPhone(phoneNumber))},
-                showRequestPermissionRationale = {coreManager.startActivityManagerEvent(StartActivityManager.GoToSettings)},
-                taskToDoWhenPermissionDeclined = {coreManager.composeManagerEvent(ComposeManager.ShowToast(TextManager.ResourceText(R.string.test_toast_resource)))},
-                )
-            )
-        },
-        pickImageFromGallery ={
-            coreManager.permissionManagerEvent(PermissionManager.ReadExternalStorage(
-                taskToDoWhenPermissionGranted = { coreManager.activityForResultManagerEvent(ActivityForResultManager.PickImageFromGallery { val imageFile=it()}) },
-                showRequestPermissionRationale = { coreManager.startActivityManagerEvent(StartActivityManager.GoToSettings) },
-                taskToDoWhenPermissionDeclined = {coreManager.composeManagerEvent(ComposeManager.ShowToast(TextManager.ResourceText(R.string.test_toast_resource)))}
-            ))
-        } ,
-        imageCaptureAndShare = {
-          coreManager.permissionManagerEvent(PermissionManager.Camera(
-              showRequestPermissionRationale ={} ,
-              taskToDoWhenPermissionDeclined = {},
-              taskToDoWhenPermissionGranted = {
-                  coreManager.activityForResultManagerEvent(ActivityForResultManager.CaptureImageByCamera(BuildConfig.APPLICATION_ID){
-                      coreManager.startActivityManagerEvent(StartActivityManager.ShareFile(listOf(it(),it()),BuildConfig.APPLICATION_ID))
-                  })
-              }
-          ))
-        },
-        imageCaptureAndOpen = {
-            coreManager.permissionManagerEvent(PermissionManager.Camera(
-                showRequestPermissionRationale ={} ,
-                taskToDoWhenPermissionDeclined = {},
-                taskToDoWhenPermissionGranted = {
-                    coreManager.activityForResultManagerEvent(ActivityForResultManager.CaptureImageByCamera(BuildConfig.APPLICATION_ID){
-                        coreManager.startActivityManagerEvent(StartActivityManager.OpenFile(it(),BuildConfig.APPLICATION_ID ))
-                    })
-                }
-            ))
-        },
-        startActivityForResult ={intent->
-            coreManager.permissionManagerEvent(PermissionManager.ReadExternalStorage(
-                taskToDoWhenPermissionGranted = { coreManager.activityForResultManagerEvent(ActivityForResultManager.PickImageFromGallery { val imageFile=it()}) },
-                showRequestPermissionRationale = { coreManager.startActivityManagerEvent(StartActivityManager.GoToSettings) },
-                taskToDoWhenPermissionDeclined = {coreManager.composeManagerEvent(ComposeManager.ShowToast(TextManager.ResourceText(R.string.test_toast_resource)))}
-            ))
-        },
-
-        requestManagerWithState = {
-            viewModelScope.launch {
-                coreManager.requestProcessWithState {
-                    delay(1000)
-                    "TASK RESULT WITH STATE"
-                }.collect{
-                    when(it){
-                        is ResultManagerWithProgress.Loading -> Log.d("CoreManager","Loading")
-                        is ResultManagerWithProgress.Success -> Log.d("CoreManager",it.result.orEmpty())
-                        is ResultManagerWithProgress.Failed -> Log.d("CoreManager",it.throwable.message.orEmpty())
-                    }
-                }
-                delay(3000)
-                coreManager.requestProcessWithState(
-                    forceRefreshData = true,
-                    taskForRefreshData = {
-                        delay(1000)
-                        "TASK RESULT WITH STATE REFRESH"
-                    },
-                    taskForReturnData = {
-                        delay(1000)
-                        "TASK RESULT WITH STATE RETURN CACHING"
-                    }
-                ).collect{
-                    when(it){
-                        is ResultManagerWithProgress.Loading -> Log.d("CoreManager","Loading")
-                        is ResultManagerWithProgress.Success -> Log.d("CoreManager",it.result.orEmpty())
-                        is ResultManagerWithProgress.Failed -> Log.d("CoreManager",it.throwable.message.orEmpty())
-                    }
-                }
-                delay(3000)
-                coreManager.requestProcessWithState(
-                    forceRefreshData = false,
-                    taskForRefreshData = {
-                        delay(1000)
-                        null
-                    },
-                    taskForReturnData = {
-                        delay(1000)
-                        "TASK RESULT WITH STATE RETURN CACHING"
-                    }
-                ).collect{
-                    when(it){
-                        is ResultManagerWithProgress.Loading -> Log.d("CoreManager","Loading")
-                        is ResultManagerWithProgress.Success -> Log.d("CoreManager",it.result)
-                        is ResultManagerWithProgress.Failed -> Log.d("CoreManager",it.throwable.message.orEmpty())
-                    }
-                }
-
-                coreManager.requestProcessWithState(
-                    forceRefreshData = true,
-                    taskForRefreshData = {
-                        delay(1000)
-                        null
-                    },
-                    taskForReturnData = {
-                        delay(1000)
-                        throw Throwable("TASK RESULT WITH STATE RETURN ERROR")
-                    }
-                ).collect{
-                    when(it){
-                        is ResultManagerWithProgress.Loading -> Log.d("CoreManager","Loading")
-                        is ResultManagerWithProgress.Success -> Log.d("CoreManager",it.result.orEmpty())
-                        is ResultManagerWithProgress.Failed -> Log.d("CoreManager",it.throwable.message.orEmpty())
-                    }
-                }
-            }
-        },
-        requestManagerWithResult = {
-            viewModelScope.launch {
-                val result1=coreManager.requestProcessWithResult {
-                    delay(1000)
-                    "TASK RESULT WITH STATE AS STATE"
-                }
-                when(result1){
-                    is ResultManager.Success -> Log.d("CoreManager",result1.result.orEmpty())
-                    is ResultManager.Failed -> Log.d("CoreManager",result1.throwable.message.orEmpty())
-                }
-                delay(3000)
-                val result2=coreManager.requestProcessWithResult (
-                    forceRefreshData = true,
-                    taskForRefreshData = {
-                        delay(1000)
-                        "TASK RESULT WITH STATE REFRESH AS STATE"
-                    },
-                    taskForReturnData = {
-                        delay(1000)
-                        "TASK RESULT WITH STATE RETURN CACHING AS STATE"
-                    }
-                )
-                when(result2){
-                    is ResultManager.Success -> Log.d("CoreManager",result2.result.orEmpty())
-                    is ResultManager.Failed -> Log.d("CoreManager",result2.throwable.message.orEmpty())
-                }
-                delay(3000)
-                val result3=coreManager.requestProcessWithResult (
-                    forceRefreshData = false,
-                    taskForRefreshData = {},
-                    taskForReturnData = {
-                        delay(1000)
-                        "TASK RESULT WITH STATE RETURN CACHING AS STATE"
-                    }
-                )
-                when(result3){
-                    is ResultManager.Success -> Log.d("CoreManager",result3.result.orEmpty())
-                    is ResultManager.Failed -> Log.d("CoreManager",result3.throwable.message.orEmpty())
-                }
-                val result4=coreManager.requestProcessWithResult (
-                    forceRefreshData = true,
-                    taskForRefreshData = {},
-                    taskForReturnData = {
-                        delay(1000)
-                        throw Throwable("TASK RESULT WITH STATE RETURN ERROR AS STATE")
-                    }
-                )
-                when(result4){
-                    is ResultManager.Success -> Log.d("CoreManager",result4.result)
-                    is ResultManager.Failed -> Log.d("CoreManager",result4.throwable.message.orEmpty())
-                }
-            }
-        },
-
-        setText1 = {newText->_mainUIState.update { it.copy(textField1 =newText ) }},
-        setText2 = {newText->_mainUIState.update { it.copy(textField2 =newText ) }},
-        setText3 = {newText->_mainUIState.update { it.copy(textField3 =newText ) }},
-        pickDate = {coreManager.dateTimeManagerEvent(DateTimeManager.PickDate { dateData ->
-                _mainUIState.update { it.copy(selectedDate = dateData().getDate()) }
-            }) },
-        pickTime = {coreManager.dateTimeManagerEvent(DateTimeManager.PickTime{timeData->
-                _mainUIState.update { it.copy(selectedTime = timeData().getTime()) }
-            }) },
-        showDialog = {coreManager.dialogManagerEvent(DialogManager.Show {
-            { ApplyCoreManagerTheme{Button(onClick = { coreManager.dialogManagerEvent(DialogManager.Hide) }) { Text(text = "Hide Dialog") }} }
-        })},
-        hideDialog = {coreManager.dialogManagerEvent(DialogManager.Hide)},
-        pickFile = {coreManager.activityForResultManagerEvent(
-            ActivityForResultManager.PickFile(true,false,false,true,true,true) {
-            Log.d("CoreManager","PickFile ${it()})")
-        })}
+    val mainUIStateReadOnly:MainUIStateReadOnly=MainUIState().returnMainUIStateReadOnly(
+        mainViewModelEvent = MainViewModelEvent(
+            readExternalStoragePermission=::readExternalStoragePermission, recordAudioPermission=::recordAudioPermission,
+            cameraPermission=::cameraPermission, callPhonePermission=::callPhonePermission,
+            sendSMSPermission=::sendSMSPermission, readCallLogPermission=::readCallLogPermission,
+            writeCallLogPermission=::writeCallLogPermission, readPhoneStatePermission=::readPhoneStatePermission,
+            locationPermission=::locationPermission, customPermission=::customPermission,
+            pickImageFromGalleryAndShare=::pickImageFromGalleryAndShare, captureImageByCameraAndOpen=::captureImageByCameraAndOpen,
+            pickFilesAndShare=::pickFilesAndShare, customActivityForResult=::customActivityForResult,
+            goToSettings=::goToSettings, restartApp=::restartApp, goToSendEmail=::goToSendEmail, startCallPhone=::startCallPhone,
+            shareText=::shareText,openWebUrl=::openWebUrl, customIntent=::customIntent,
+            pickDate=::pickDate, pickTime=::pickTime, showDialog=::showDialog, hideKeyBoard=::hideKeyBoard,
+            nextFocus=::nextFocus, downFocus=::downFocus, popup=::popup, showToast=::showToast, navigation=::navigation,
+            requestManagerWithResult=::requestManagerWithResult, requestManagerWithResultWithProgress=::requestManagerWithResultWithState
+        )
     )
+
+    private val showRequestPermissionRationale:()->Unit=
+        {coreManager.startActivityManagerEvent(StartActivityManager.GoToSettings)}
+    private val taskToDoWhenPermissionDeclined:()->Unit=
+        {coreManager.composeManagerEvent(ComposeManager.ShowToast("PERMISSION_REQUIRED".asTextManager()))}
+    private val taskToDoWhenPermissionGranted:()->Unit=
+        {coreManager.composeManagerEvent(ComposeManager.ShowToast("PERMISSION_GRANTED".asTextManager()))}
+
+    ///// PERMISSION_MANAGER
+    private fun readExternalStoragePermission(){
+        coreManager.permissionManagerEvent(PermissionManager.ReadExternalStorage(
+            taskToDoWhenPermissionDeclined=taskToDoWhenPermissionDeclined,
+            showRequestPermissionRationale=showRequestPermissionRationale,
+            taskToDoWhenPermissionGranted = taskToDoWhenPermissionGranted
+        ))
+    }
+    private fun recordAudioPermission(){
+        coreManager.permissionManagerEvent(PermissionManager.RecordAudio(
+            taskToDoWhenPermissionDeclined=taskToDoWhenPermissionDeclined,
+            showRequestPermissionRationale=showRequestPermissionRationale,
+            taskToDoWhenPermissionGranted = taskToDoWhenPermissionGranted
+        ))
+    }
+    private fun cameraPermission(){
+        coreManager.permissionManagerEvent(PermissionManager.Camera(
+            taskToDoWhenPermissionDeclined=taskToDoWhenPermissionDeclined,
+            showRequestPermissionRationale=showRequestPermissionRationale,
+            taskToDoWhenPermissionGranted = taskToDoWhenPermissionGranted
+        ))
+    }
+    private fun callPhonePermission(){
+        coreManager.permissionManagerEvent(PermissionManager.CallPhone(
+            taskToDoWhenPermissionDeclined=taskToDoWhenPermissionDeclined,
+            showRequestPermissionRationale=showRequestPermissionRationale,
+            taskToDoWhenPermissionGranted = taskToDoWhenPermissionGranted
+        ))
+    }
+    private fun sendSMSPermission(){
+        coreManager.permissionManagerEvent(PermissionManager.SendSMSPermission(
+            taskToDoWhenPermissionDeclined=taskToDoWhenPermissionDeclined,
+            showRequestPermissionRationale=showRequestPermissionRationale,
+            taskToDoWhenPermissionGranted = taskToDoWhenPermissionGranted
+        ))
+    }
+    private fun readCallLogPermission(){
+        coreManager.permissionManagerEvent(PermissionManager.ReadCallLogPermission(
+            taskToDoWhenPermissionDeclined=taskToDoWhenPermissionDeclined,
+            showRequestPermissionRationale=showRequestPermissionRationale,
+            taskToDoWhenPermissionGranted = taskToDoWhenPermissionGranted
+        ))
+    }
+    private fun writeCallLogPermission(){
+        coreManager.permissionManagerEvent(PermissionManager.WriteCallLogPermission(
+            taskToDoWhenPermissionDeclined=taskToDoWhenPermissionDeclined,
+            showRequestPermissionRationale=showRequestPermissionRationale,
+            taskToDoWhenPermissionGranted = taskToDoWhenPermissionGranted
+        ))
+    }
+    private fun readPhoneStatePermission(){
+        coreManager.permissionManagerEvent(PermissionManager.ReadPhoneStatePermission(
+            taskToDoWhenPermissionDeclined=taskToDoWhenPermissionDeclined,
+            showRequestPermissionRationale=showRequestPermissionRationale,
+            taskToDoWhenPermissionGranted = taskToDoWhenPermissionGranted
+        ))
+    }
+    private fun locationPermission(){
+        coreManager.permissionManagerEvent(PermissionManager.LocationPermission(
+            taskToDoWhenPermissionDeclined=taskToDoWhenPermissionDeclined,
+            showRequestPermissionRationale=showRequestPermissionRationale,
+            taskToDoWhenPermissionGranted = taskToDoWhenPermissionGranted
+        ))
+    }
+    private fun customPermission(customPermission:String){
+        coreManager.permissionManagerEvent(PermissionManager.CustomPermission(customPermission,
+            taskToDoWhenPermissionDeclined=taskToDoWhenPermissionDeclined,
+            showRequestPermissionRationale=showRequestPermissionRationale,
+            taskToDoWhenPermissionGranted = taskToDoWhenPermissionGranted
+        ))
+    }
+
+    ///// START_ACTIVITY_FOR_RESULT_MANAGER
+    private fun pickImageFromGalleryAndShare(){
+        coreManager.startActivityForResultManagerEvent(
+            StartActivityForResultManager.PickImageFromGallery{
+                coreManager.startActivityManagerEvent(StartActivityManager.ShareFile(listOf(it()),BuildConfig.APPLICATION_ID))
+            }
+        )
+    }
+    private fun captureImageByCameraAndOpen(){
+        coreManager.permissionManagerEvent(PermissionManager.Camera(
+            taskToDoWhenPermissionDeclined=taskToDoWhenPermissionDeclined, showRequestPermissionRationale=showRequestPermissionRationale,
+            taskToDoWhenPermissionGranted = {
+                coreManager.startActivityForResultManagerEvent(
+                    StartActivityForResultManager.CaptureImageByCamera(BuildConfig.APPLICATION_ID){
+                        coreManager.startActivityManagerEvent(StartActivityManager.OpenFile(it(),BuildConfig.APPLICATION_ID))
+                    }
+                )
+            }
+        ))
+    }
+    private fun pickFilesAndShare(){
+        coreManager.startActivityForResultManagerEvent(
+            StartActivityForResultManager.PickFiles(true,true,true,true,true,true){
+                coreManager.startActivityManagerEvent(StartActivityManager.ShareFile(it(),BuildConfig.APPLICATION_ID))
+            }
+        )
+    }
+    private fun customActivityForResult(intent: Intent){
+        coreManager.startActivityForResultManagerEvent(StartActivityForResultManager.CustomIntent(intent) {
+
+        })
+    }
+
+    ///// START_ACTIVITY_MANAGER
+    private fun goToSettings(){coreManager.startActivityManagerEvent(StartActivityManager.GoToSettings)}
+    private fun restartApp(){coreManager.startActivityManagerEvent(StartActivityManager.RestartApp)}
+    private fun goToSendEmail(email:String,subject:String,body:String){
+        coreManager.startActivityManagerEvent(StartActivityManager.GoToSendEmail(email,subject,body))
+    }
+    private fun startCallPhone(phoneNumber:String){
+        coreManager.startActivityManagerEvent(StartActivityManager.StartCallPhone(phoneNumber))
+    }
+    private fun shareText(){coreManager.startActivityManagerEvent(StartActivityManager.ShareText("TEST_SHARE_TEXT___CORE_MANAGER"))}
+    private fun openWebUrl(){coreManager.startActivityManagerEvent(StartActivityManager.OpenWebUrl("https://www.google.com"))}
+    private fun customIntent(intent: Intent){coreManager.startActivityManagerEvent(StartActivityManager.CustomIntent(intent))}
+
+    ///// DATE_TIME_MANAGER
+    private fun pickDate(){
+        coreManager.dateTimeManagerEvent(DateTimeManager.PickDate{mainUIStateReadOnly.mainUIEvent.updateSelectedData(it().getDate())})
+    }
+    private fun pickTime(){
+        coreManager.dateTimeManagerEvent(DateTimeManager.PickTime{mainUIStateReadOnly.mainUIEvent.updateSelectedTime(it().getTime())})
+    }
+
+    ///// DIALOG_MANAGER
+    private fun showDialog(){coreManager.dialogManagerEvent(DialogManager.Show {
+        {
+            Card() {
+                Box(modifier = Modifier.padding(20.dp)) {
+                    MainButton(text ="HIDE DIALOG"){
+                        coreManager.dialogManagerEvent(DialogManager.Hide)
+                    }
+                }
+            }
+        }
+    })}
+
+    ///// COMPOSE_MANAGER
+    private fun hideKeyBoard(){coreManager.composeManagerEvent(ComposeManager.HideKeyBoard)}
+    private fun nextFocus(){coreManager.composeManagerEvent(ComposeManager.NextFocus)}
+    private fun downFocus(){coreManager.composeManagerEvent(ComposeManager.DownFocus)}
+    private fun popup(){coreManager.composeManagerEvent(ComposeManager.Popup)}
+    private fun showToast(textManager: TextManager){coreManager.composeManagerEvent(ComposeManager.ShowToast(textManager))}
+    private fun navigation(destinationManager: DestinationManager){coreManager.composeManagerEvent(ComposeManager.Navigation(destinationManager))}
+
+    ///// REQUEST_MANAGER
+    private suspend fun createFakeRequest(isSuccess:Boolean, delayAmount:Long): String {
+        delay(delayAmount)
+        if (!isSuccess) throw IllegalStateException("ERROR REQUEST")
+        delay(delayAmount)
+        return "SUCCESS REQUEST"
+    }
+    private fun requestManagerWithResult(){
+        viewModelScope.launch {
+            val successRequest=coreManager.requestProcessWithResult {
+                createFakeRequest(true,2500)
+            }
+            when(successRequest){
+                is ResultManager.Success -> Log.d("CoreManager","TEST_REQUEST_MANAGER_WITH_RESULT ${successRequest.result}")
+                is ResultManager.Failed -> Log.d("CoreManager","TEST_REQUEST_MANAGER_WITH_RESULT ${successRequest.throwable.message}")
+            }
+            val errorRequest=coreManager.requestProcessWithResult {
+                createFakeRequest(true,2500)
+            }
+            when(errorRequest){
+                is ResultManager.Success -> Log.d("CoreManager","TEST_REQUEST_MANAGER_WITH_RESULT ${errorRequest.result}")
+                is ResultManager.Failed -> Log.d("CoreManager","TEST_REQUEST_MANAGER_WITH_RESULT ${errorRequest.throwable.message}")
+            }
+        }
+    }
+    private fun requestManagerWithResultWithState(){
+        viewModelScope.launch {
+            coreManager.requestProcessWithState { createFakeRequest(true,2500) }.collect{
+                when(it){
+                    is ResultManagerWithProgress.Success -> Log.d("CoreManager","TEST_REQUEST_MANAGER_WITH_STATE ${it.result}")
+                    is ResultManagerWithProgress.Loading -> Log.d("CoreManager","TEST_REQUEST_MANAGER_WITH_STATE $it")
+                    is ResultManagerWithProgress.Failed -> Log.d("CoreManager","TEST_REQUEST_MANAGER_WITH_STATE ${it.throwable.message}")
+                }
+            }
+            coreManager.requestProcessWithState { createFakeRequest(false,2500) }.collect{
+                when(it){
+                    is ResultManagerWithProgress.Success -> Log.d("CoreManager","TEST_REQUEST_MANAGER_WITH_STATE ${it.result}")
+                    is ResultManagerWithProgress.Loading -> Log.d("CoreManager","TEST_REQUEST_MANAGER_WITH_STATE LOADING.. ")
+                    is ResultManagerWithProgress.Failed -> Log.d("CoreManager","TEST_REQUEST_MANAGER_WITH_STATE ${it.throwable.message}")
+                }
+            }
+        }
+    }
 
 }
 
-data class MainUIState(
-    val textField1:String="",val textField2:String="",val textField3:String="",
-    val selectedDate:String="Pick Date",val selectedTime:String="Pick Time",
-    val navigationManager: NavigationManager
+class MainUIStateReadOnly(
+    val textField1:StateFlow<String>, val textField2:StateFlow<String>,
+    val selectedDate:StateFlow<String>, val selectedTime:StateFlow<String>,
+    val mainUIEvent: MainUIEvent,
+    val mainViewModelEvent:MainViewModelEvent
+){
+
+}
+class MainUIState(
+    private val textField1:MutableStateFlow<String> = MutableStateFlow(""),
+    private val textField2:MutableStateFlow<String> = MutableStateFlow(""),
+    private val selectedDate:MutableStateFlow<String> = MutableStateFlow("Pick Date"),
+    private val selectedTime:MutableStateFlow<String> = MutableStateFlow("Pick Time"),
+){
+    fun returnMainUIStateReadOnly(mainViewModelEvent:MainViewModelEvent):MainUIStateReadOnly=
+        MainUIStateReadOnly(
+            textField1,textField2,selectedDate,selectedTime,
+            MainUIEvent(
+                updateText1 = ::updateText1,updateText2=::updateText2,
+                updateSelectedTime = ::updateSelectedTime, updateSelectedData = ::updateSelectedData
+            ),
+            mainViewModelEvent=mainViewModelEvent
+        )
+
+    fun updateText1(newValue:String){textField1.update { newValue }}
+    fun updateText2(newValue:String){textField2.update { newValue }}
+    fun updateSelectedTime(newValue:String){selectedTime.update { newValue }}
+    fun updateSelectedData(newValue:String){selectedDate.update { newValue }}
+}
+class MainUIEvent(
+    val updateText1:(String)->Unit, val updateText2:(String)->Unit,
+    val updateSelectedTime: (String)->Unit ,val updateSelectedData: (String)->Unit,
 )
-data class MainUIEvent(
-    val setText1:(String)->Unit, val setText2:(String)->Unit, val setText3:(String)->Unit,
+class MainViewModelEvent(
+    ///// PERMISSION_MANAGER
+    val readExternalStoragePermission:()->Unit, val recordAudioPermission:()->Unit, val cameraPermission:()->Unit,
+    val callPhonePermission:()->Unit, val sendSMSPermission:()->Unit, val readCallLogPermission:()->Unit,
+    val writeCallLogPermission:()->Unit, val readPhoneStatePermission:()->Unit, val locationPermission:()->Unit,
+    val customPermission:(permission:String)->Unit,
 
-    val hideKeyBoard:()->Unit, val nextFocus:()->Unit, val downFocus:()->Unit, val popUp:()->Unit, val showToast:(TextManager)->Unit,
-    val goToSettings:()->Unit, val restartApp:()->Unit, val navigateTo:(DestinationManager,arg1:String?,arg2:String?)->Unit,
+    ///// START_ACTIVITY_FOR_RESULT_MANAGER
+    val pickImageFromGalleryAndShare:()->Unit, val captureImageByCameraAndOpen:()->Unit,
+    val pickFilesAndShare:()->Unit, val customActivityForResult:(Intent)->Unit,
 
-    val getStringFromRes:(Int)->Unit,
+    ///// START_ACTIVITY_MANAGER
+    val goToSettings:()->Unit, val restartApp:()->Unit, val goToSendEmail:(email:String,subject:String,body:String)->Unit,
+    val startCallPhone:(String)->Unit, val shareText:()->Unit,
+    val openWebUrl:()->Unit, val customIntent:(Intent)->Unit,
 
-    val requestReadExternalStoragePermission:()->Unit, val requestRecordAudioPermission:()->Unit,
-    val requestCameraPermission:()->Unit, val requestCustomPermission:(String)->Unit,
-    val requestCallPhonePermission:()->Unit, val requestLocationPermission:()->Unit,
-
-    val pickImageFromGallery:()->Unit,
-    val imageCaptureAndShare:()->Unit,val imageCaptureAndOpen:()->Unit,
-    val startActivityForResult:(Intent)->Unit,
-    val startPhoneCall:(phone:String)->Unit,
-    val goToSendEmail:(email:String,subject:String,body:String)->Unit, val startCustomIntent:(intent: Intent)->Unit,
-
-    val requestManagerWithState:()->Unit, val requestManagerWithResult:()->Unit,val pickFile:()->Unit,
-
+    ///// DATE_TIME_MANAGER
     val pickDate:()->Unit, val pickTime:()->Unit,
 
-    val showDialog:()->Unit, val hideDialog:()->Unit
+    ///// DIALOG_MANAGER
+    val showDialog:()->Unit,
+
+    ///// COMPOSE_MANAGER
+    val hideKeyBoard:()->Unit, val nextFocus:()->Unit, val downFocus:()->Unit,
+    val popup:()->Unit, val showToast:(TextManager)->Unit, val navigation:(DestinationManager)->Unit,
+
+    ///// REQUEST_MANAGER
+    val requestManagerWithResult:()->Unit, val requestManagerWithResultWithProgress:()->Unit
 )

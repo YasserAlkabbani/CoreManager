@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -104,120 +106,123 @@ fun MainCompose(){
 //    val localFocusManager= LocalFocusManager.current
 
     val mainViewModel:MainViewModel= hiltViewModel()
-
-    val mainUIEvent=mainViewModel.mainUIEvent
-    val mainUIState=mainViewModel.mainUIState.collectAsState().value
-    val currentDestination=mainUIState.navigationManager.currentDestination.collectAsState().value
+    val mainUIStateReadOnly=mainViewModel.mainUIStateReadOnly
+    val textField1=mainUIStateReadOnly.textField1.collectAsState().value
+    val textField2=mainUIStateReadOnly.textField2.collectAsState().value
+    val selectedDate=mainUIStateReadOnly.selectedDate.collectAsState().value
+    val selectedTime=mainUIStateReadOnly.selectedTime.collectAsState().value
+    val mainUIEvent=mainUIStateReadOnly.mainUIEvent
+    val mainViewModelEvent=mainUIStateReadOnly.mainViewModelEvent
 
     LazyColumn(
         content = {
 
             ///TextField
-            item { OutlinedTextField(value =mainUIState.textField1 , onValueChange =mainUIEvent.setText1 ) }
-            item { OutlinedTextField(value =mainUIState.textField2 , onValueChange =mainUIEvent.setText2 ) }
-            item { OutlinedTextField(value =mainUIState.textField3 , onValueChange =mainUIEvent.setText3 ) }
+            item { TextField(text =textField1 , onTextChange =mainUIEvent.updateText1 ) }
+            item { TextField(text =textField2 , onTextChange =mainUIEvent.updateText2 ) }
 
-            /// Compose Manager
-            item { Button(onClick = {mainUIEvent.hideKeyBoard()}) { Text(text = "Hide KeyBoard") }}
-            item { Button(onClick = {mainUIEvent.nextFocus()}) { Text(text = "Next Focus") }}
-            item { Button(onClick = {mainUIEvent.downFocus()}) { Text(text = "Down Focus") }}
-            item { Button(onClick = {mainUIEvent.popUp()}) { Text(text = "Popup") }}
-            item { Button(onClick = {mainUIEvent.showToast("Test String Toast".asTextManager())}) { Text(text = "Show String Toast") }}
-            item { Button(onClick = {mainUIEvent.showToast(R.string.test_toast_resource.asTextManager())}) { Text(text = "Show Resource Toast") }}
+            ///// COMPOSE_MANAGER
+            item { MainButton(text ="Hide KeyBoard" , onClick = mainViewModelEvent.hideKeyBoard) }
+            item { MainButton(text ="Next Focus" , onClick = mainViewModelEvent.nextFocus) }
+            item { MainButton(text ="Down Focus" , onClick = mainViewModelEvent.downFocus) }
+            item { MainButton(text ="Show Toast" , onClick = {mainViewModelEvent.showToast("TEST TOAST".asTextManager())}) }
+            item { MainButton(text="Navigate To Greeting 1",onClick = {mainViewModelEvent.navigation(ApplyCoreDestinationsManager().greeting1)}) }
 
-            item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting1,null,null)}) { Text(text = "Navigate To Greeting 1") }}
-            item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting2,null,null)}) { Text(text = "Navigate To Greeting 2") }}
-            item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting3,"67890","67890")}) { Text(text = "Navigate To Greeting 3") }}
-            item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting4,"12345","12345")}) { Text(text = "Navigate To Greeting 4") }}
-            item { Button(onClick = {mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting5,null,null)}) { Text(text = "Navigate To Greeting 5") }}
+            ///// PERMISSION_MANAGER
+            item { MainButton(text="Read External Storage Permission", onClick = mainViewModelEvent.readExternalStoragePermission) }
+            item { MainButton(text="Record Audio Permission", onClick = mainViewModelEvent.recordAudioPermission) }
+            item { MainButton(text="Camera Permission", onClick = mainViewModelEvent.cameraPermission) }
+            item { MainButton(text="Call Phone Permission", onClick = mainViewModelEvent.callPhonePermission) }
+            item { MainButton(text="Send SMS Permission", onClick = mainViewModelEvent.sendSMSPermission) }
+            item { MainButton(text="Read Call Log Permission", onClick = mainViewModelEvent.readCallLogPermission) }
+            item { MainButton(text="Location Permission", onClick = mainViewModelEvent.locationPermission) }
+            item { MainButton(text="Custom Permission (LOCATION)", onClick = {mainViewModelEvent.customPermission(Manifest.permission.ACCESS_FINE_LOCATION)}) }
 
-            /// Permission Manager
-            item { Button(onClick = {mainUIEvent.requestReadExternalStoragePermission()}) { Text(text = "Read Storage Permission") }}
-            item { Button(onClick = {mainUIEvent.requestRecordAudioPermission()}) { Text(text = "Record Audio Permission") }}
-            item { Button(onClick = {mainUIEvent.requestCameraPermission()}) { Text(text = "Request Camera Permission") }}
-            item { Button(onClick = {mainUIEvent.requestCallPhonePermission()}) { Text(text = "Request Call Phone Permission") }}
-            item { Button(onClick = {mainUIEvent.requestLocationPermission()}) { Text(text = "Request Location Permission") }}
-            item { Button(onClick = {mainUIEvent.requestCustomPermission(Manifest.permission.ACCESS_COARSE_LOCATION)}) { Text(text = "Request Custom Permission") }}
+            ///// START_ACTIVITY_FOR_RESULT_MANAGER
+            item { MainButton(text = "Pick Image From Gallery And Share", onClick = mainViewModelEvent.pickImageFromGalleryAndShare) }
+            item { MainButton(text = "Capture Image By Camera And Open", onClick = mainViewModelEvent.captureImageByCameraAndOpen) }
+            item { MainButton(text = "Pick Files And Share", onClick = mainViewModelEvent.pickFilesAndShare) }
+            item { MainButton(text = "Custom Activity For Result (PICK IMAGE)", onClick = {mainViewModelEvent.customActivityForResult(
+                Intent().apply {
+                    type = "image/*"
+                    action = Intent.ACTION_PICK
+                }
+            )})}
 
-            /// Start Activity
-            item { Button(onClick = {mainUIEvent.goToSendEmail("yasser@Yasser.com","EMAIL_SUBJECT","EMAIL_BODY")}) { Text(text = "Send Email") }}
-            item { Button(onClick = {mainUIEvent.startPhoneCall("+963930345510")}) { Text(text = "Start Call Phone") }}
-            item { Button(onClick = {mainUIEvent.goToSettings()}) { Text(text = "Go To Settings") }}
-            item { Button(onClick = {mainUIEvent.restartApp()}) { Text(text = "Restart App") }}
-            item { Button(onClick = {mainUIEvent.getStringFromRes(R.string.test_toast_resource)}) { Text(text = "String From Res") }}
-            item { Button(onClick = {mainUIEvent.startCustomIntent(Intent().apply { action = Intent.ACTION_DIAL;data = Uri.parse("tel: +963966994266") })}) { Text(text = "Start Call Phone") }}
+            ///// START_ACTIVITY_MANAGER
+            item { MainButton(text = "Go To Settings", onClick = mainViewModelEvent.goToSettings) }
+            item { MainButton(text = "Restart App", onClick = mainViewModelEvent.restartApp) }
+            item { MainButton(text = "Go To Send Email", onClick = {mainViewModelEvent.goToSendEmail("yasser@Yasser.com","EMAIL_SUBJECT","EMAIL_BODY")}) }
+            item { MainButton(text = "Start Call Phone", onClick = {mainViewModelEvent.startCallPhone("+963930345510")}) }
+            item { MainButton(text = "Share Text", onClick = mainViewModelEvent.shareText) }
+            item { MainButton(text = "Open Web Url", onClick = mainViewModelEvent.openWebUrl) }
+            item { MainButton(text = "Custom Intent (CREATE CALL)", onClick = {mainViewModelEvent.customIntent(
+                Intent().apply {
+                    action = Intent.ACTION_CALL
+                    data = Uri.parse("tel:+963930345510")
+                }
+            )})}
 
-            /// Start Activity For Result
-            item { Button(onClick = {mainUIEvent.pickImageFromGallery()}) { Text(text = "Pick Image From Gallery") }}
-            item { Button(onClick = {mainUIEvent.requestRecordAudioPermission()}) { Text(text = "Test Permission") }}
+            ///// DATE_TIME_MANAGER
+            item { MainButton(text=selectedDate, onClick = mainViewModelEvent.pickDate) }
+            item { MainButton(text=selectedTime, onClick = mainViewModelEvent.pickTime) }
 
-            item { Button(onClick = {mainUIEvent.requestManagerWithState()}) { Text(text = "Request With State") }}
-            item { Button(onClick = {mainUIEvent.requestManagerWithResult()}) { Text(text = "Request With Result") }}
+            ///// DIALOG_MANAGER
+            item { MainButton(text="showDialog", onClick = mainViewModelEvent.showDialog) }
 
-            item { Button(onClick = {mainUIEvent.pickFile()}) { Text(text = "Pick File") }}
-
-            item { Button(onClick = {mainUIEvent.pickDate()}) { Text(text = mainUIState.selectedDate) }}
-            item { Button(onClick = {mainUIEvent.pickTime()}) { Text(text = mainUIState.selectedTime) }}
-
-            item {
-                Button(onClick = {mainUIEvent.showDialog ()}) { Text(text = "Show Dialog") } }
-
-            item { Button(onClick = {mainUIEvent.imageCaptureAndShare()}) { Text(text = "Image Capture And Share") }}
-            item { Button(onClick = {mainUIEvent.imageCaptureAndOpen()}) { Text(text = "Image Capture And Open") }}
+            ///// REQUEST_MANAGER
+            item { MainButton(text="Request With State",onClick = {mainViewModelEvent.requestManagerWithResultWithProgress()}) }
+            item { MainButton(text ="Request With Result",onClick = {mainViewModelEvent.requestManagerWithResult()})}
 
         }
     )
+}
 
+@Composable
+fun TextField(text:String,onTextChange:(String)->Unit){
+    OutlinedTextField(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),value =text , onValueChange =onTextChange )
+}
+@Composable
+fun MainButton(text:String,onClick:()->Unit){
+    Button(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),onClick = onClick) { Text(text = text) }
 }
 
 @Composable
 fun Greeting1(name: String) {
     val mainViewModel:MainViewModel= hiltViewModel()
-    Box(Modifier.fillMaxSize()) {
-        Button(
-            modifier = Modifier.align(Alignment.Center),
-            onClick = {mainViewModel.mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting2,null,null)}
-        ){
-            Text(text = "Hello 1 $name!",fontSize = 30.sp)
-        }
+    val mainViewModelEvent=mainViewModel.mainUIStateReadOnly.mainViewModelEvent
+    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        MainButton(text ="Popup" , onClick = mainViewModelEvent.popup)
+        MainButton(text="Navigate From Greeting 1 To Greeting 2 $name",onClick = {mainViewModelEvent.navigation(ApplyCoreDestinationsManager().greeting2)})
     }
 }
 
 @Composable
 fun Greeting2(name: String) {
     val mainViewModel:MainViewModel= hiltViewModel()
-    Box(Modifier.fillMaxSize()) {
-        Button(
-            modifier = Modifier.align(Alignment.Center),
-            onClick = {mainViewModel.mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting3,"12345","56698")}
-        ){
-            Text(text = "Hello 2 $name!",fontSize = 30.sp)
-        }
+    val mainViewModelEvent=mainViewModel.mainUIStateReadOnly.mainViewModelEvent
+    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        MainButton(text ="Popup" , onClick = mainViewModelEvent.popup)
+        MainButton(text="Navigate From Greeting 2 To Greeting 3 $name",onClick = {mainViewModelEvent.navigation(ApplyCoreDestinationsManager().greeting3)})
     }
 }
 
 @Composable
 fun Greeting3(name: String) {
     val mainViewModel:MainViewModel= hiltViewModel()
-    Box(Modifier.fillMaxSize()) {
-        Button(
-            modifier = Modifier.align(Alignment.Center),
-            onClick = {mainViewModel.mainUIEvent.navigateTo(ApplyCoreDestinationsManager().greeting4,"12345","56698")}
-        ){
-            Text(text = "Hello 3 $name!",fontSize = 30.sp)
-        }
+    val mainViewModelEvent=mainViewModel.mainUIStateReadOnly.mainViewModelEvent
+    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        MainButton(text ="Popup" , onClick = mainViewModelEvent.popup)
+        MainButton(text="Navigate From Greeting 3 To Greeting 4 $name",onClick = {mainViewModelEvent.navigation(ApplyCoreDestinationsManager().greeting4)})
     }
 }
 @Composable
 fun Greeting4(name: String) {
     val mainViewModel:MainViewModel= hiltViewModel()
-    Box(Modifier.fillMaxSize()) {
-        Button(
-            modifier = Modifier.align(Alignment.Center),
-            onClick = {mainViewModel.mainUIEvent.popUp()}
-        ){
-            Text(text = "Hello 4 $name!",fontSize = 30.sp)
-        }
+    val mainViewModelEvent=mainViewModel.mainUIStateReadOnly.mainViewModelEvent
+    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        MainButton(text ="Popup" , onClick = mainViewModelEvent.popup)
+        MainButton(text="Greeting 4 $name",onClick = {})
     }
 }
 @Composable
@@ -225,6 +230,7 @@ fun Greeting5() {
     val mainViewModel:MainViewModel= hiltViewModel()
     val text= remember { mutableStateOf("")}
     Column(modifier = Modifier.fillMaxSize()) {
+        
         val listItem= buildList {
             repeat(500){ add("ITEM_ $it _ $it _ $it") }
         }
@@ -268,36 +274,28 @@ data class ApplyCoreDestinationsManager(
     val greeting1:DestinationManager=DestinationManager(
         "Greeting1".asTextManager(),"greeting_1",R.drawable.icon_android,null,null,
         true,true,true,true, {
-            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={
-                popUpTo("main_compose"){inclusive=true}
-            }
+            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={}
             navOptionsBuilderExt
         }, { { Greeting1("Greeting1") } }
     ),
     val greeting2:DestinationManager=DestinationManager(
         "Greeting2".asTextManager(),"greeting_2",R.drawable.icon_android,null,null,
         true,true,true,true, {
-           val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={
-               popUpTo("greeting_1"){inclusive=true}
-           }
+           val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={ popUpTo("greeting_1"){inclusive=true} }
             navOptionsBuilderExt
         }, { { Greeting2("Greeting2") } }
     ),
     val greeting3:DestinationManager=DestinationManager(
         "Greeting3".asTextManager(),"greeting_3",R.drawable.icon_android,"G_3_1","G_3_2",
         true,true,true,true, {
-            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={
-                popUpTo("greeting_2"){inclusive=false}
-            }
+            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={}
             navOptionsBuilderExt
         }, { { Greeting3("Greeting3") } }
     ),
     val greeting4:DestinationManager=DestinationManager(
         "Greeting4".asTextManager(),"greeting_4",R.drawable.icon_android,null,"G_4_2",
         true,true,true,true, {
-            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={
-                popUpTo("greeting_3"){inclusive=true}
-            }
+            val navOptionsBuilderExt:NavOptionsBuilder.()->Unit={ popUpTo("greeting_3"){inclusive=true} }
             navOptionsBuilderExt
         }, { { Greeting4("Greeting4") } }
     ),

@@ -161,7 +161,7 @@ open class CoreActivity : AppCompatActivity() {
         }
         coreManager.setActivityForResultManagerEvent(this.toString()) {activityForResultManager->
             when(activityForResultManager){
-                is ActivityForResultManager.PickImageFromGallery -> {
+                is StartActivityForResultManager.PickImageFromGallery -> {
                     val intent:Intent = Intent().apply {
                         type = "image/*"
                         action = Intent.ACTION_PICK
@@ -181,7 +181,7 @@ open class CoreActivity : AppCompatActivity() {
                         }
                     }
                 }
-                is ActivityForResultManager.CaptureImageByCamera -> {
+                is StartActivityForResultManager.CaptureImageByCamera -> {
                     val imageFile= File.createTempFile(System.currentTimeMillis().toString(),".jpg")
                     val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
                     val photoURI: Uri = FileProvider.getUriForFile(this, "${activityForResultManager.packageName}.fileprovider", imageFile)
@@ -194,11 +194,11 @@ open class CoreActivity : AppCompatActivity() {
                         }
                     }
                 }
-                is ActivityForResultManager.CustomActivityForResult -> {
+                is StartActivityForResultManager.CustomIntent -> {
                     getContent.launch(activityForResultManager.intent)
                     processContentData={ activityForResultManager.dataToReturn{it()}}
                 }
-                is ActivityForResultManager.PickFile -> {
+                is StartActivityForResultManager.PickFiles -> {
                     fun getFile(fileUri:Uri):File{
                         val fileData= application.contentResolver.query(fileUri, null, null, null, null)?.use {
                             val nameColumnIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
