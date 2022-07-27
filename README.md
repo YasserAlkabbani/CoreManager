@@ -8,7 +8,7 @@ Note : To Use This Library You Must Use ViewModel ,Hilt For Dependency Injection
 
 Some Feature Support Compose Only For Now ...
 
-(https://jitpack.io/v/YasserAlkabbani/CoreManager.svg)](https://jitpack.io/#YasserAlkabbani/CoreManager)
+https://jitpack.io/v/YasserAlkabbani/CoreManager.svg)](https://jitpack.io/#YasserAlkabbani/CoreManager
 
 
 How To Use ?
