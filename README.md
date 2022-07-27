@@ -15,8 +15,8 @@ How To Use ?
 
 1 - Add This Line To dependencies 
 ```
-implementation 'com.github.YasserAlkabbani:CoreManager:X.X.X'
-[![](https://jitpack.io/v/YasserAlkabbani/CoreManager.svg)](https://jitpack.io/#YasserAlkabbani/CoreManager)
+implementation 'com.github.YasserAlkabbani:CoreManager:v0.5.0-beta01'
+
 ```
 
 2 - repository
