@@ -16,6 +16,7 @@ How To Use ?
 1 - Add This Line To dependencies 
 ```
 implementation 'com.github.YasserAlkabbani:CoreManager:X.X.X'
+[![](https://jitpack.io/v/YasserAlkabbani/CoreManager.svg)](https://jitpack.io/#YasserAlkabbani/CoreManager)
 ```
 
 2 - repository
