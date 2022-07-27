@@ -15,7 +15,7 @@ How To Use ?
 
 1 - Add This Line To dependencies 
 ```
-implementation 'com.github.YasserAlkabbani:CoreManager:0.1.6-alpha'
+implementation 'com.github.YasserAlkabbani:CoreManager:X.X.X'
 ```
 
 2 - repository
