@@ -15,11 +15,28 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
-    val coreManager:CoreManager):ViewModel() {
+class MainViewModel @Inject constructor(val coreManager:CoreManager):ViewModel() {
+
+    private val _cameraCapture:MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val cameraCapture:StateFlow<Boolean> = _cameraCapture
+
+    private val _pickFiles:MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val pickFiles:StateFlow<Boolean> =_pickFiles
+
+    private val _shareFile:MutableStateFlow<List<File>> = MutableStateFlow(listOf())
+    val shareFile:StateFlow<List<File>> =_shareFile
+
+    fun cameraCapture(){_cameraCapture.update { true }}
+    fun doneCameraCapture(){_cameraCapture.update { false }}
+    fun selectCameraImage(imageFile: File){}
+    fun pickFiles(){_pickFiles.update { true }}
+    fun donePickFiles(){_pickFiles.update { false }}
+    fun shareFiles(filesList:List<File>){_shareFile.update { filesList }}
+    fun doneShareFiles(){_shareFile.update { listOf() }}
 
     val mainUIStateReadOnly:MainUIStateReadOnly=MainUIState().returnMainUIStateReadOnly(
         mainViewModelEvent = MainViewModelEvent(

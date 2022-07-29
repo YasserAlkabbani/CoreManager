@@ -1,10 +1,20 @@
 package com.yasser.applycoremanager
 
 import android.Manifest
+import android.app.Activity
+import android.content.ClipData
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.provider.Settings
+import android.util.Log
+import android.webkit.MimeTypeMap
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,8 +27,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.NavHost
 import com.yasser.applycoremanager.ui.theme.ApplyCoreManagerTheme
@@ -29,18 +44,174 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Singleton
 
 @AndroidEntryPoint
 class MainActivity : CoreActivity() {
-
+    
     private val mainViewModel:MainViewModel by viewModels()
+
+
+    var cameraImageFile:File?=null
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted) {cameraCapture()}
+            else {/* SHOW MESSAGE */}
+        }
+    fun getFile(fileUri:Uri): File {
+        val fileData= application.contentResolver.query(fileUri, null, null, null, null)?.use {
+            val nameColumnIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            it.moveToFirst()
+            it.getString(nameColumnIndex)
+        }
+        val fileName=fileData?.substringBeforeLast(".")
+        val fileExt=fileData?.substringAfterLast(".")
+
+        val file: File = File(application.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "$fileName.$fileExt")
+
+        application.contentResolver.openInputStream(fileUri)?.copyTo(file.outputStream())
+        return file
+    }
+    private val getContent = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        ///// PICK_FILES
+        if(it.resultCode== RESULT_OK){
+            val result=it
+            if (result.resultCode == Activity.RESULT_OK){
+                result.data?.data?.let {
+                    val file: File =getFile(it)
+                    mainViewModel.shareFiles(listOf(file))
+                }?: run {
+                    result.data?.clipData?.let {clipDate->
+                        buildList<File> {
+                            repeat(clipDate.itemCount){index->
+                                val file: File =getFile(clipDate.getItemAt(index).uri)
+                                this.add(file)
+                            }
+                        }.let {files->
+                          mainViewModel.shareFiles(files)
+                        }
+                    }
+                }
+            }
+        }
+
+        ///// CAMERA_CAPTURE
+        if (it.resultCode== RESULT_OK){
+            cameraImageFile?.let {file->
+                mainViewModel.selectCameraImage(file)
+            }
+        }
+    }
+
+    fun shareFiles(files:List<File>){
+        val fileMimeList= files
+            .map {it.path.substringAfterLast(".")}
+            .mapNotNull{ MimeTypeMap.getSingleton().getMimeTypeFromExtension(it)}
+            .joinToString("|","","")
+
+        val filesUri:ArrayList<Uri> = arrayListOf()
+        files.forEach { file->
+            filesUri.add(FileProvider.getUriForFile(this, "${BuildConfig.APPLICATION_ID}.fileprovider", file))
+        }
+
+        val clipData: ClipData = ClipData.newRawUri("Open File", filesUri.first()).apply {
+            filesUri.forEach {addItem(ClipData.Item(it))}
+        }
+
+        val intent:Intent =Intent().apply {
+            action = Intent.ACTION_SEND_MULTIPLE
+            type=fileMimeList
+            putParcelableArrayListExtra(Intent.EXTRA_STREAM, filesUri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) //or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            this.clipData = clipData
+        }
+        startActivity(Intent.createChooser(intent, "Share By"))
+    }
+
+    fun pickFiles(
+        image:Boolean, audio:Boolean, video:Boolean, pdf:Boolean, excel:Boolean, word:Boolean,
+    ){
+        val pickFileIntent:Intent= Intent().apply {
+            val typeList= buildList {
+                if (image){add("image/*")}
+                if (audio){add("audio/*")}
+                if (video){add("video/*")}
+                if (pdf){add("application/pdf")}
+                if (excel){
+                    addAll(listOf("application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                }
+                if (word){
+                    addAll(listOf("application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+                }
+            }.toTypedArray()
+            action=Intent.ACTION_OPEN_DOCUMENT
+            type = "*/*"
+            putExtra(Intent.EXTRA_MIME_TYPES,typeList)
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true)
+            addCategory(Intent.CATEGORY_OPENABLE)
+        }
+
+        getContent.launch(pickFileIntent)
+
+    }
+
+    private fun checkCameraPermission(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            when {
+                ContextCompat.checkSelfPermission(application, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED -> {
+                    cameraCapture()
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) -> {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    intent.data = Uri.parse("package:$packageName")
+                    startActivity(intent)
+                }
+                else -> {
+                    requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                }
+            }
+        }else{cameraCapture()}
+    }
+
+    fun cameraCapture(){
+        cameraImageFile= File.createTempFile(System.currentTimeMillis().toString(),".jpg")
+        cameraImageFile?.let {file->
+            val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            val photoURI: Uri = FileProvider.getUriForFile(this, "${BuildConfig.APPLICATION_ID}.fileprovider", file)
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+            getContent.launch(takePictureIntent)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        lifecycleScope.launchWhenCreated {
+            repeatOnLifecycle(Lifecycle.State.RESUMED){
+                launch {
+                    mainViewModel.cameraCapture.filter { it }.onEach { mainViewModel.doneCameraCapture() }.collect{
+                        checkCameraPermission()
+                    }
+                }
+                launch {
+                    mainViewModel.pickFiles.filter { it }.onEach { mainViewModel.donePickFiles() }.collect{
+                        pickFiles(true,true,true,true,true,true)
+                    }
+                }
+                launch {
+                    mainViewModel.shareFile.filter { it.isNotEmpty() }.onEach { mainViewModel.doneShareFiles() }.collect{
+                        shareFiles(it)
+                    }
+                }
+            }
+        }
 
         coreManagerContent{
             ApplyCoreManagerTheme{
@@ -124,7 +295,7 @@ fun MainCompose(){
             ///// COMPOSE_MANAGER
             item { MainButton(text ="Hide KeyBoard" , onClick = mainViewModelEvent.hideKeyBoard) }
             item { MainButton(text ="Next Focus" , onClick = mainViewModelEvent.nextFocus) }
-            item { MainButton(text ="Down Focus" , onClick = mainViewModelEvent.downFocus) }
+//            item { MainButton(text ="Down Focus" , onClick = mainViewModelEvent.downFocus) }
             item { MainButton(text ="Show Toast" , onClick = {mainViewModelEvent.showToast("TEST TOAST".asTextManager())}) }
             item { MainButton(text="Navigate To Greeting 1",onClick = {mainViewModelEvent.navigation(ApplyCoreDestinationsManager().greeting1)}) }
 

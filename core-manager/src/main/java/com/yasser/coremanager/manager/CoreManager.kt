@@ -8,7 +8,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CoreManager @Inject constructor(val navigationManager: NavigationManager){
+class CoreManager @Inject constructor(){
+
+    @Inject lateinit var navigationManager: NavigationManager
+    internal set
 
     private var currentActivity:String?=null
     internal fun setCurrentActivity(newActivity:String){currentActivity=newActivity}
