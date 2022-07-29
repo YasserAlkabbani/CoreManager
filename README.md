@@ -14,6 +14,9 @@ https://jitpack.io/v/YasserAlkabbani/CoreManager.svg)](https://jitpack.io/#Yasse
 How To Use ?
 
 1 - Add This Line To dependencies 
+
+[![](https://jitpack.io/v/YasserAlkabbani/CoreManager.svg)](https://jitpack.io/#YasserAlkabbani/CoreManager)
+
 ```
 implementation 'com.github.YasserAlkabbani:CoreManager:v0.5.0-beta01'
 
