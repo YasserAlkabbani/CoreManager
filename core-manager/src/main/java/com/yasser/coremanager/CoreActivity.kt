@@ -310,6 +310,7 @@ open class CoreActivity : AppCompatActivity() {
                         this.clipData = clipData
                     }
                     startActivity(Intent.createChooser(intent, "Share By"))
+
                 }
                 is StartActivityManager.OpenFile->{
                     val fileExt= it.file.path.substringAfterLast(".")
