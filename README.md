@@ -18,7 +18,7 @@ How To Use ?
 [![](https://jitpack.io/v/YasserAlkabbani/CoreManager.svg)](https://jitpack.io/#YasserAlkabbani/CoreManager)
 
 ```
-implementation 'com.github.YasserAlkabbani:CoreManager:v0.5.0-beta01'
+implementation 'com.github.YasserAlkabbani:CoreManager:LAST_VERSION'
 
 ```
 
